@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Builder — Prototype</title>
+<link rel="stylesheet" href="domain-builder.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Domain Builder</h1>
+    <p class="subtitle">Prototype: build a domain as a union of intervals and excluded points.</p>
+
+    <div class="card">
+      <div class="label">Segments</div>
+      <div id="segments"></div>
+      <div class="add-row">
+        <button id="addIntervalBtn" class="add-btn">+ Interval</button>
+        <button id="addPointBtn" class="add-btn">+ Excluded point (x ≠ a)</button>
+        <button id="clearBtn" class="add-btn clear-btn">Clear all</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Preview</div>
+      <div id="preview" class="preview"></div>
+      <svg id="numberLine" class="number-line" viewBox="0 0 600 90"></svg>
+    </div>
+
+    <details class="debug">
+      <summary>Debug: internal data model</summary>
+      <pre id="debugOut"></pre>
+    </details>
+  </div>
+
+  <script type="module" src="domain-builder.js"></script>
+</body>
+</html>

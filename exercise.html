@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Exercise — Prototype</title>
+<link rel="stylesheet" href="domain-builder.css">
+<link rel="stylesheet" href="exercise.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Find the Domain</h1>
+    <p class="subtitle">Determine the domain of the given function.</p>
+
+    <div class="card problem-card">
+      <div class="label">Function</div>
+      <div id="problemText" class="problem-text"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Your answer</div>
+      <div id="segments"></div>
+      <div class="add-row">
+        <button id="addIntervalBtn" class="add-btn">+ Interval</button>
+        <button id="addPointBtn" class="add-btn">+ Excluded point (x ≠ a)</button>
+        <button id="clearBtn" class="add-btn clear-btn">Clear all</button>
+      </div>
+      <div id="preview" class="preview"></div>
+      <svg id="numberLine" class="number-line" viewBox="0 0 600 90"></svg>
+    </div>
+
+    <div class="buttons">
+      <button id="checkBtn">Check</button>
+      <button id="solutionBtn" class="secondary">Show solution</button>
+      <button id="nextBtn" class="secondary hidden">Another exercise</button>
+    </div>
+
+    <div id="confirmBox" class="confirm-box hidden">
+      <div class="confirm-label">The domain you entered has no interval — did you mean:</div>
+      <div id="confirmText" class="confirm-text"></div>
+      <div class="confirm-actions">
+        <button id="confirmYesBtn" class="add-btn">Yes</button>
+        <button id="confirmBackBtn" class="add-btn clear-btn">Go back and fix</button>
+      </div>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+    <div id="solutionBox" class="solution-box hidden">
+      <div class="label">Saved solution (not necessarily the only correct form)</div>
+      <div id="solutionPreview" class="preview"></div>
+    </div>
+  </div>
+
+  <script type="module" src="exercise.js"></script>
+</body>
+</html>

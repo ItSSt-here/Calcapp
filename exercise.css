@@ -1,0 +1,131 @@
+.problem-card {
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.problem-text {
+  font-size: 1.8rem;
+  direction: ltr;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+button#checkBtn {
+  font-size: 1rem;
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+button#checkBtn:hover { background: var(--accent-hover); }
+
+button#checkBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  font-size: 1rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.secondary:hover { background: #eee; }
+
+button.hidden {
+  display: none;
+}
+
+.solution-box {
+  margin-top: -4px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #f6f7fb;
+  border: 1px solid var(--border);
+}
+
+.solution-box.hidden {
+  display: none;
+}
+
+.solution-box .label {
+  margin-bottom: 8px;
+}
+
+.solution-box .preview {
+  margin-bottom: 0;
+  font-size: 1.2rem;
+}
+
+.confirm-box {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.confirm-box.hidden {
+  display: none;
+}
+
+.confirm-label {
+  font-size: 0.9rem;
+  color: #b45309;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.confirm-text {
+  font-size: 1.3rem;
+  direction: ltr;
+  margin-bottom: 12px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.feedback {
+  min-height: 24px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.feedback.correct {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.feedback.incorrect {
+  background: #fef2f2;
+  color: var(--bad);
+}
+
+.feedback.info {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.feedback .correct-answer {
+  font-family: "Cambria Math", Georgia, serif;
+  font-weight: 700;
+  direction: ltr;
+  display: inline-block;
+}

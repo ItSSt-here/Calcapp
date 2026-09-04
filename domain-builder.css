@@ -1,0 +1,272 @@
+:root {
+  --bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text: #1f2430;
+  --muted: #6b7280;
+  --border: #e2e5ec;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --bad: #dc2626;
+  --seg-colors: #4f46e5, #0891b2, #b45309, #db2777, #16a34a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.container {
+  width: 100%;
+  max-width: 680px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Segment rows                                                          */
+/* ---------------------------------------------------------------------- */
+
+.segment-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fafbfe;
+  font-size: 1rem;
+}
+
+.segment-row.invalid {
+  border-color: var(--bad);
+  background: #fef2f2;
+}
+
+.segment-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bracket-btn {
+  font-family: "Cambria Math", Georgia, serif;
+  font-size: 1.3rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.bracket-btn:hover:not(:disabled) { background: #eef0fb; border-color: var(--accent); }
+
+.bracket-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.value-input {
+  width: 64px;
+  font-size: 1rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.value-input:disabled {
+  background: #eee;
+  color: var(--muted);
+}
+
+.inf-btn {
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.inf-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.comma {
+  color: var(--muted);
+}
+
+.point-label {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.row-spacer { flex: 1; }
+
+.row-preview {
+  font-family: "Cambria Math", Georgia, serif;
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+.move-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.move-btn {
+  width: 20px;
+  height: 15px;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.6rem;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.move-btn:hover:not(:disabled) { background: #eef0fb; border-color: var(--accent); color: var(--accent); }
+
+.move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--bad);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.remove-btn:hover { background: #fef2f2; }
+
+/* ---------------------------------------------------------------------- */
+/* Add buttons                                                           */
+/* ---------------------------------------------------------------------- */
+
+.add-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.add-btn {
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-btn:hover { background: #eef0fb; }
+
+.clear-btn {
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.clear-btn:hover { background: #f3f4f6; }
+
+/* ---------------------------------------------------------------------- */
+/* Preview                                                                */
+/* ---------------------------------------------------------------------- */
+
+.preview {
+  font-size: 1.3rem;
+  font-family: "Cambria Math", Georgia, serif;
+  min-height: 32px;
+  margin-bottom: 14px;
+  direction: ltr;
+  text-align: left;
+}
+
+.preview.empty {
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.excluded-list {
+  color: var(--coin, #b45309);
+}
+
+.number-line {
+  width: 100%;
+  height: 90px;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Debug                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.debug {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.debug pre {
+  white-space: pre-wrap;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
