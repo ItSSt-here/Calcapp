@@ -1,4 +1,4 @@
-import { createDomainBuilder, buildPreviewFragment } from "./domain-builder-core.js";
+import { createDomainBuilder, buildPreviewFragment, renderNumberLineSVG } from "./domain-builder-core.js";
 import { domainsEqual } from "./domain-equivalence.js";
 
 // Hard-coded exercise bank. Domain problems are too varied/structural to
@@ -163,8 +163,9 @@ function instantiateExercise(def) {
 
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
-const solutionBoxEl = document.getElementById("solutionBox");
-const solutionPreviewEl = document.getElementById("solutionPreview");
+const answerLabelEl = document.getElementById("answerLabel");
+const previewEl = document.getElementById("preview");
+const numberLineEl = document.getElementById("numberLine");
 const confirmOverlayEl = document.getElementById("confirmOverlay");
 const confirmTextEl = document.getElementById("confirmText");
 const checkBtn = document.getElementById("checkBtn");
@@ -175,8 +176,8 @@ const confirmBackBtn = document.getElementById("confirmBackBtn");
 
 const builder = createDomainBuilder({
   segmentsEl: document.getElementById("segments"),
-  previewEl: document.getElementById("preview"),
-  svgEl: document.getElementById("numberLine"),
+  previewEl,
+  svgEl: numberLineEl,
 }, {
   initialSegments: [
     { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
@@ -208,8 +209,8 @@ function loadExercise(exercise) {
 
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
-  solutionBoxEl.classList.add("hidden");
-  solutionPreviewEl.innerHTML = "";
+  answerLabelEl.textContent = "Your answer";
+  answerLabelEl.classList.remove("showing-solution");
   confirmOverlayEl.classList.add("hidden");
   pendingRealsGuess = null;
 
@@ -287,9 +288,16 @@ solutionBtn.addEventListener("click", () => {
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
   confirmOverlayEl.classList.add("hidden");
-  solutionBoxEl.classList.remove("hidden");
-  solutionPreviewEl.innerHTML = "";
-  solutionPreviewEl.appendChild(buildPreviewFragment(currentExercise.correct));
+
+  // Replace the student's own preview/number-line — not their input rows —
+  // with the correct answer's, right where their own would normally render.
+  answerLabelEl.textContent = "Solution (not necessarily the only correct form)";
+  answerLabelEl.classList.add("showing-solution");
+  previewEl.classList.remove("empty");
+  previewEl.innerHTML = "";
+  previewEl.appendChild(buildPreviewFragment(currentExercise.correct));
+  renderNumberLineSVG(currentExercise.correct, numberLineEl);
+
   resolveExercise();
 });
 

@@ -64,8 +64,8 @@ function escapeHtml(str) {
 }
 
 // Builds the "(-∞, 2) ∪ [3, ∞),  x ≠ 5" style preview as a DOM fragment, so
-// both the live builder preview and a static "show solution" display can
-// render the exact same notation from a plain segment list.
+// both the live builder preview and a "show solution" display can render
+// the exact same notation from a plain segment list.
 export function buildPreviewFragment(segments) {
   const frag = document.createDocumentFragment();
   if (segments.length === 0) {
@@ -90,6 +90,116 @@ export function buildPreviewFragment(segments) {
     frag.appendChild(exSpan);
   }
   return frag;
+}
+
+// Draws the same axis-with-intervals-and-points picture the live builder
+// uses, into any target <svg> — so a "show solution" display can render
+// the correct answer's number line without needing its own builder instance.
+export function renderNumberLineSVG(segments, svgEl) {
+  const width = 600, height = 90, pad = 30, axisY = 55;
+  const finiteVals = [];
+  segments.forEach((s) => {
+    if (s.type === "interval") {
+      const l = evaluateExpr(s.leftVal), r = evaluateExpr(s.rightVal);
+      if (l !== null && Number.isFinite(l)) finiteVals.push(l);
+      if (r !== null && Number.isFinite(r)) finiteVals.push(r);
+    } else {
+      const p = evaluateExpr(s.pointVal);
+      if (p !== null && Number.isFinite(p)) finiteVals.push(p);
+    }
+  });
+
+  let min = -5, max = 5;
+  if (finiteVals.length) {
+    min = Math.min(...finiteVals);
+    max = Math.max(...finiteVals);
+    if (min === max) { min -= 1; max += 1; }
+    const span = max - min;
+    min -= span * 0.25 + 0.5;
+    max += span * 0.25 + 0.5;
+  }
+  // The origin is always a visible reference point, even if every
+  // entered value is far from it.
+  min = Math.min(min, 0);
+  max = Math.max(max, 0);
+
+  const x = (v) => pad + ((v - min) / (max - min)) * (width - 2 * pad);
+
+  let svg = "";
+  svg += `<line x1="${pad - 8}" y1="${axisY}" x2="${width - pad + 8}" y2="${axisY}" stroke="#c7cbe0" stroke-width="2" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>`;
+
+  svg += `<defs>
+    <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#c7cbe0"/>
+    </marker>
+    <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M8,0 L0,4 L8,8 Z" fill="#c7cbe0"/>
+    </marker>
+  </defs>`;
+
+  // zero tick — always shown, since it's now always kept in range
+  if (min <= 0 && max >= 0) {
+    const zx = x(0);
+    svg += `<line x1="${zx}" y1="${axisY - 9}" x2="${zx}" y2="${axisY + 9}" stroke="#111318" stroke-width="2.5"/>`;
+    svg += `<text x="${zx}" y="${axisY + 24}" font-size="13" font-weight="700" fill="#111318" text-anchor="middle">0</text>`;
+  }
+
+  // Draw intervals first (background layer), then excluded points on top —
+  // regardless of row order, so a point is never hidden under an interval bar.
+  segments.forEach((s, i) => {
+    if (s.type !== "interval") return;
+    const color = SEG_COLORS[i % SEG_COLORS.length];
+    const y = axisY;
+
+    const lRaw = evaluateExpr(s.leftVal);
+    const rRaw = evaluateExpr(s.rightVal);
+    if (lRaw === null || rRaw === null) return;
+    const lInf = !Number.isFinite(lRaw), rInf = !Number.isFinite(rRaw);
+    const l = lInf ? min - 1 : lRaw;
+    const r = rInf ? max + 1 : rRaw;
+    const x1 = lInf ? pad - 8 : x(Math.max(l, min));
+    const x2 = rInf ? width - pad + 8 : x(Math.min(r, max));
+    if (x2 <= x1 && !lInf && !rInf) return;
+
+    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt"/>`;
+
+    if (!lInf) {
+      const cx = x(l);
+      const label = escapeHtml(latexToPlainText(s.leftVal));
+      svg += s.leftClosed
+        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
+        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
+      svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+    }
+    if (!rInf) {
+      const cx = x(r);
+      const label = escapeHtml(latexToPlainText(s.rightVal));
+      svg += s.rightClosed
+        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
+        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
+      svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+    }
+  });
+
+  segments.forEach((s, i) => {
+    if (s.type !== "point") return;
+    const color = SEG_COLORS[i % SEG_COLORS.length];
+    const y = axisY;
+
+    const p = evaluateExpr(s.pointVal);
+    if (p === null || !Number.isFinite(p) || p < min || p > max) return;
+    const cx = x(p);
+    const label = escapeHtml(latexToPlainText(s.pointVal));
+    svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3"/>`;
+    svg += `<line x1="${cx - 5}" y1="${y - 5}" x2="${cx + 5}" y2="${y + 5}" stroke="${color}" stroke-width="2"/>`;
+    svg += `<line x1="${cx - 5}" y1="${y + 5}" x2="${cx + 5}" y2="${y - 5}" stroke="${color}" stroke-width="2"/>`;
+    svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+  });
+
+  svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#9aa0b8">x</text>`;
+
+  svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svgEl.innerHTML = svg;
 }
 
 // LaTeX snippets the per-field menu inserts into that field. "#0"/"#1" are
@@ -251,110 +361,7 @@ export function createDomainBuilder(elements, options = {}) {
   // ---------------------------------------------------------------------
 
   function renderNumberLine() {
-    const width = 600, height = 90, pad = 30, axisY = 55;
-    const finiteVals = [];
-    segments.forEach((s) => {
-      if (s.type === "interval") {
-        const l = evaluateExpr(s.leftVal), r = evaluateExpr(s.rightVal);
-        if (l !== null && Number.isFinite(l)) finiteVals.push(l);
-        if (r !== null && Number.isFinite(r)) finiteVals.push(r);
-      } else {
-        const p = evaluateExpr(s.pointVal);
-        if (p !== null && Number.isFinite(p)) finiteVals.push(p);
-      }
-    });
-
-    let min = -5, max = 5;
-    if (finiteVals.length) {
-      min = Math.min(...finiteVals);
-      max = Math.max(...finiteVals);
-      if (min === max) { min -= 1; max += 1; }
-      const span = max - min;
-      min -= span * 0.25 + 0.5;
-      max += span * 0.25 + 0.5;
-    }
-    // The origin is always a visible reference point, even if every
-    // entered value is far from it.
-    min = Math.min(min, 0);
-    max = Math.max(max, 0);
-
-    const x = (v) => pad + ((v - min) / (max - min)) * (width - 2 * pad);
-
-    let svg = "";
-    svg += `<line x1="${pad - 8}" y1="${axisY}" x2="${width - pad + 8}" y2="${axisY}" stroke="#c7cbe0" stroke-width="2" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>`;
-
-    svg += `<defs>
-      <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-        <path d="M0,0 L8,4 L0,8 Z" fill="#c7cbe0"/>
-      </marker>
-      <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-        <path d="M8,0 L0,4 L8,8 Z" fill="#c7cbe0"/>
-      </marker>
-    </defs>`;
-
-    // zero tick — always shown, since it's now always kept in range
-    if (min <= 0 && max >= 0) {
-      const zx = x(0);
-      svg += `<line x1="${zx}" y1="${axisY - 9}" x2="${zx}" y2="${axisY + 9}" stroke="#111318" stroke-width="2.5"/>`;
-      svg += `<text x="${zx}" y="${axisY + 24}" font-size="13" font-weight="700" fill="#111318" text-anchor="middle">0</text>`;
-    }
-
-    // Draw intervals first (background layer), then excluded points on top —
-    // regardless of row order, so a point is never hidden under an interval bar.
-    segments.forEach((s, i) => {
-      if (s.type !== "interval") return;
-      const color = SEG_COLORS[i % SEG_COLORS.length];
-      const y = axisY;
-
-      const lRaw = evaluateExpr(s.leftVal);
-      const rRaw = evaluateExpr(s.rightVal);
-      if (lRaw === null || rRaw === null) return;
-      const lInf = !Number.isFinite(lRaw), rInf = !Number.isFinite(rRaw);
-      const l = lInf ? min - 1 : lRaw;
-      const r = rInf ? max + 1 : rRaw;
-      const x1 = lInf ? pad - 8 : x(Math.max(l, min));
-      const x2 = rInf ? width - pad + 8 : x(Math.min(r, max));
-      if (x2 <= x1 && !lInf && !rInf) return;
-
-      svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt"/>`;
-
-      if (!lInf) {
-        const cx = x(l);
-        const label = escapeHtml(latexToPlainText(s.leftVal));
-        svg += s.leftClosed
-          ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
-          : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
-        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
-      }
-      if (!rInf) {
-        const cx = x(r);
-        const label = escapeHtml(latexToPlainText(s.rightVal));
-        svg += s.rightClosed
-          ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
-          : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
-        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
-      }
-    });
-
-    segments.forEach((s, i) => {
-      if (s.type !== "point") return;
-      const color = SEG_COLORS[i % SEG_COLORS.length];
-      const y = axisY;
-
-      const p = evaluateExpr(s.pointVal);
-      if (p === null || !Number.isFinite(p) || p < min || p > max) return;
-      const cx = x(p);
-      const label = escapeHtml(latexToPlainText(s.pointVal));
-      svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3"/>`;
-      svg += `<line x1="${cx - 5}" y1="${y - 5}" x2="${cx + 5}" y2="${y + 5}" stroke="${color}" stroke-width="2"/>`;
-      svg += `<line x1="${cx - 5}" y1="${y + 5}" x2="${cx + 5}" y2="${y - 5}" stroke="${color}" stroke-width="2"/>`;
-      svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
-    });
-
-    svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#9aa0b8">x</text>`;
-
-    svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svgEl.innerHTML = svg;
+    renderNumberLineSVG(segments, svgEl);
   }
 
   function renderDebug() {

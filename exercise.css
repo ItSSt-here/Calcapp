@@ -78,27 +78,6 @@ button#nextBtn:hover {
   box-shadow: 0 3px 9px rgba(22, 163, 74, 0.4);
 }
 
-.solution-box {
-  margin-top: -4px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  background: #f6f7fb;
-  border: 1px solid var(--border);
-}
-
-.solution-box.hidden {
-  display: none;
-}
-
-.solution-box .label {
-  margin-bottom: 8px;
-}
-
-.solution-box .preview {
-  margin-bottom: 0;
-  font-size: 1.2rem;
-}
-
 .confirm-overlay {
   position: fixed;
   inset: 0;
