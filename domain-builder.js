@@ -10,7 +10,7 @@ const builder = createDomainBuilder(
   {
     // Seed with one example interval + excluded point so the UI isn't empty on first load.
     initialSegments: [
-      { type: "interval", leftInf: true, leftClosed: false, leftVal: "", rightInf: false, rightClosed: false, rightVal: "2" },
+      { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "2" },
       { type: "point", pointVal: "5" },
     ],
   }

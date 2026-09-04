@@ -5,14 +5,18 @@ import { domainsEqual } from "./domain-equivalence.js";
 // generate randomly, so each is authored by hand: a prompt (LaTeX, rendered
 // with KaTeX) plus a correct answer expressed in the same segment shape the
 // builder produces.
-const ALL_REALS = { type: "interval", leftInf: true, leftClosed: false, leftVal: "", rightInf: true, rightClosed: false, rightVal: "" };
+const ALL_REALS = { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "\\infty" };
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 const EXERCISES = [
   {
     id: "ln-x",
     prompt: "f(x) = \\ln(x)",
     correct: [
-      { type: "interval", leftInf: false, leftClosed: false, leftVal: "0", rightInf: true, rightClosed: false, rightVal: "" },
+      { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
     ],
   },
   {
@@ -32,21 +36,38 @@ const EXERCISES = [
     ],
   },
   {
-    id: "ln-x2-plus-1",
-    prompt: "f(x) = \\ln\\left(x^2+1\\right)",
-    correct: [
-      { ...ALL_REALS },
-    ],
+    // x²+a is at least a (>0 for any a in [1,10]), so ln is always defined —
+    // the domain is all reals regardless of which a gets rolled.
+    id: "ln-x2-plus-a",
+    generate: () => {
+      const a = randInt(1, 10);
+      return {
+        prompt: `f(x) = \\ln\\left(x^2+${a}\\right)`,
+        correct: [{ ...ALL_REALS }],
+      };
+    },
   },
   {
-    id: "ln-x2-minus-1",
-    prompt: "f(x) = \\ln\\left(x^2-1\\right)",
-    correct: [
-      { type: "interval", leftInf: true, leftClosed: false, leftVal: "", rightInf: false, rightClosed: false, rightVal: "-1" },
-      { type: "interval", leftInf: false, leftClosed: false, leftVal: "1", rightInf: true, rightClosed: false, rightVal: "" },
-    ],
+    // x²-a > 0  <=>  |x| > √a — the boundary depends on the rolled a, so the
+    // correct answer is computed fresh alongside the prompt each time.
+    id: "ln-x2-minus-a",
+    generate: () => {
+      const a = randInt(1, 10);
+      return {
+        prompt: `f(x) = \\ln\\left(x^2-${a}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: `-\\sqrt{${a}}` },
+          { type: "interval", leftClosed: false, leftVal: `\\sqrt{${a}}`, rightClosed: false, rightVal: "\\infty" },
+        ],
+      };
+    },
   },
 ];
+
+function instantiateExercise(def) {
+  const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
+  return { id: def.id, ...rolled };
+}
 
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
@@ -66,7 +87,7 @@ const builder = createDomainBuilder({
   svgEl: document.getElementById("numberLine"),
 }, {
   initialSegments: [
-    { type: "interval", leftInf: false, leftClosed: true, leftVal: "", rightInf: false, rightClosed: false, rightVal: "" },
+    { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
   ],
 });
 
@@ -78,9 +99,11 @@ let currentExercise = null;
 let pendingRealsGuess = null; // synthetic segments awaiting confirmation via the ℝ-suggestion dialog
 
 function pickExercise() {
-  if (EXERCISES.length === 1) return EXERCISES[0];
-  const pool = currentExercise ? EXERCISES.filter((e) => e.id !== currentExercise.id) : EXERCISES;
-  return pool[Math.floor(Math.random() * pool.length)];
+  const pool = EXERCISES.length > 1 && currentExercise
+    ? EXERCISES.filter((e) => e.id !== currentExercise.id)
+    : EXERCISES;
+  const def = pool[Math.floor(Math.random() * pool.length)];
+  return instantiateExercise(def);
 }
 
 function loadExercise(exercise) {
@@ -88,7 +111,7 @@ function loadExercise(exercise) {
   katex.render(exercise.prompt, problemTextEl, { throwOnError: false, displayMode: true });
 
   builder.setSegments([
-    { type: "interval", leftInf: false, leftClosed: true, leftVal: "", rightInf: false, rightClosed: false, rightVal: "" },
+    { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
   ]);
 
   feedbackEl.className = "feedback";

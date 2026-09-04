@@ -4,38 +4,63 @@
 // createDomainBuilder(elements, options) wires the widget up to a set of
 // DOM elements and returns a small API for reading/seeding its state.
 
+import "https://esm.run/mathlive@0.110.0"; // registers the <math-field> custom element
+import { MathfieldElement } from "https://esm.run/mathlive@0.110.0";
+import { evaluateExpr, latexToPlainText } from "./math-expr.js";
+
+// esm.run's asset resolution for MathLive's math fonts is unreliable —
+// point it at a CDN path that actually serves them.
+MathfieldElement.fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.110.0/fonts";
+MathfieldElement.soundsDirectory = null;
+
 const SEG_COLORS = ["#4f46e5", "#0891b2", "#b45309", "#db2777", "#16a34a", "#7c3aed"];
 
-export function parseNum(str) {
-  if (str === "" || str === null || str === undefined) return null;
-  const n = Number(str);
-  return Number.isFinite(n) ? n : null;
+// A boundary field holds one string that's either a plain number, a math
+// expression (e^2, sqrt(2), pi/2, ...), or infinity written as inf /
+// infinity / ∞ — evaluateExpr() handles all three the same way, so there's
+// no separate "is this infinite" flag to keep in sync.
+function isInf(v) {
+  return v !== null && !Number.isFinite(v);
 }
 
 export function isIntervalValid(s) {
-  const l = s.leftInf ? -Infinity : parseNum(s.leftVal);
-  const r = s.rightInf ? Infinity : parseNum(s.rightVal);
+  const l = evaluateExpr(s.leftVal);
+  const r = evaluateExpr(s.rightVal);
   if (l === null || r === null) return false;
   return l < r;
 }
 
 export function isPointValid(s) {
-  return parseNum(s.pointVal) !== null;
+  const v = evaluateExpr(s.pointVal);
+  return v !== null && Number.isFinite(v);
 }
 
 export function formatVal(v) {
-  return v === "" || v === null ? "?" : v;
+  if (v === "" || v === null || v === undefined) return "?";
+  return latexToPlainText(v) || "?";
 }
 
 export function segmentText(s) {
   if (s.type === "interval") {
-    const lb = s.leftInf ? "(" : (s.leftClosed ? "[" : "(");
-    const rb = s.rightInf ? ")" : (s.rightClosed ? "]" : ")");
-    const lv = s.leftInf ? "-∞" : formatVal(s.leftVal);
-    const rv = s.rightInf ? "∞" : formatVal(s.rightVal);
+    const l = evaluateExpr(s.leftVal);
+    const r = evaluateExpr(s.rightVal);
+    const lInf = isInf(l), rInf = isInf(r);
+    const lb = lInf ? "(" : (s.leftClosed ? "[" : "(");
+    const rb = rInf ? ")" : (s.rightClosed ? "]" : ")");
+    const lv = lInf ? (l < 0 ? "-∞" : "∞") : formatVal(s.leftVal);
+    const rv = rInf ? (r < 0 ? "-∞" : "∞") : formatVal(s.rightVal);
     return `${lb}${lv}, ${rv}${rb}`;
   }
   return `x ≠ ${formatVal(s.pointVal)}`;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Builds the "(-∞, 2) ∪ [3, ∞),  x ≠ 5" style preview as a DOM fragment, so
@@ -67,6 +92,38 @@ export function buildPreviewFragment(segments) {
   return frag;
 }
 
+// LaTeX snippets the per-field menu inserts into that field. "#0"/"#1" are
+// MathLive placeholder slots the cursor lands in.
+const SYMBOL_INSERTS = {
+  sqrt: "\\sqrt{#0}",
+  pow: "^{#0}",
+  frac: "\\frac{#0}{#1}",
+  pi: "\\pi",
+  e: "e",
+  infty: "\\infty",
+};
+
+const SYMBOL_MENU_HTML = `
+  <div class="field-menu hidden">
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="sqrt" title="Square root">√</button>
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="pow" title="Exponent">x²</button>
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="frac" title="Fraction">a⁄b</button>
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="pi" title="Pi">π</button>
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="e" title="Euler's number">e</button>
+    <button type="button" class="field-menu-item" data-action="insert" data-insert="infty" title="Infinity">∞</button>
+  </div>`;
+
+// A math-field plus a small dropdown caret (bottom-right) that opens a
+// symbol menu scoped to that one field, instead of one shared toolbar.
+function fieldWrapHTML(action, placeholder) {
+  return `
+    <span class="field-wrap">
+      <math-field class="value-input" data-action="${action}" placeholder="${placeholder}" virtual-keyboard-mode="onfocus"></math-field>
+      <button type="button" class="field-menu-btn" data-action="toggle-menu" title="Insert symbol">▾</button>
+      ${SYMBOL_MENU_HTML}
+    </span>`;
+}
+
 export function createDomainBuilder(elements, options = {}) {
   const { segmentsEl, previewEl, svgEl, debugEl } = elements;
   const { initialSegments = [], onChange } = options;
@@ -74,17 +131,24 @@ export function createDomainBuilder(elements, options = {}) {
   let segments = [];
   let nextId = 1;
 
+  function closeAllMenus() {
+    segmentsEl.querySelectorAll(".field-menu").forEach((m) => m.classList.add("hidden"));
+  }
+
+  // Close any open symbol menu when clicking outside its field-wrap.
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".field-wrap")) return;
+    closeAllMenus();
+  });
+
+  // Keep the field focused while using its toggle/menu — a plain button
+  // click would otherwise steal focus and insert() needs the field active.
+  segmentsEl.addEventListener("mousedown", (e) => {
+    if (e.target.closest('[data-action="toggle-menu"], [data-action="insert"]')) e.preventDefault();
+  });
+
   function newInterval() {
-    return {
-      id: nextId++,
-      type: "interval",
-      leftInf: false,
-      leftClosed: true,
-      leftVal: "",
-      rightInf: false,
-      rightClosed: false,
-      rightVal: "",
-    };
+    return { id: nextId++, type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" };
   }
 
   function newPoint() {
@@ -128,17 +192,17 @@ export function createDomainBuilder(elements, options = {}) {
 
       if (s.type === "interval") {
         if (!isIntervalValid(s)) row.classList.add("invalid");
+        const lInf = isInf(evaluateExpr(s.leftVal));
+        const rInf = isInf(evaluateExpr(s.rightVal));
         row.innerHTML = `
           <span class="segment-swatch" style="background:${color}"></span>
-          <button class="bracket-btn" data-action="toggle-left-bracket" ${s.leftInf ? "disabled" : ""}>${s.leftInf ? "(" : (s.leftClosed ? "[" : "(")}</button>
-          <button class="inf-btn ${s.leftInf ? "active" : ""}" data-action="toggle-left-inf">-∞</button>
-          <input class="value-input" type="number" step="any" placeholder="x" data-action="left-val" value="${s.leftVal}" ${s.leftInf ? "disabled" : ""}>
+          <button class="bracket-btn" data-action="toggle-left-bracket" ${lInf ? "disabled" : ""}>${lInf ? "(" : (s.leftClosed ? "[" : "(")}</button>
+          ${fieldWrapHTML("left-val", "x")}
           <span class="comma">,</span>
-          <input class="value-input" type="number" step="any" placeholder="x" data-action="right-val" value="${s.rightVal}" ${s.rightInf ? "disabled" : ""}>
-          <button class="inf-btn ${s.rightInf ? "active" : ""}" data-action="toggle-right-inf">∞</button>
-          <button class="bracket-btn" data-action="toggle-right-bracket" ${s.rightInf ? "disabled" : ""}>${s.rightInf ? ")" : (s.rightClosed ? "]" : ")")}</button>
+          ${fieldWrapHTML("right-val", "x")}
+          <button class="bracket-btn" data-action="toggle-right-bracket" ${rInf ? "disabled" : ""}>${rInf ? ")" : (s.rightClosed ? "]" : ")")}</button>
           <span class="row-spacer"></span>
-          <span class="row-preview">${segmentText(s)}</span>
+          <span class="row-preview">${escapeHtml(segmentText(s))}</span>
           ${moveBtns}
           <button class="remove-btn" data-action="remove" title="Remove">✕</button>
         `;
@@ -147,14 +211,23 @@ export function createDomainBuilder(elements, options = {}) {
         row.innerHTML = `
           <span class="segment-swatch" style="background:${color}"></span>
           <span class="point-label">x ≠</span>
-          <input class="value-input" type="number" step="any" placeholder="a" data-action="point-val" value="${s.pointVal}">
+          ${fieldWrapHTML("point-val", "a")}
           <span class="row-spacer"></span>
-          <span class="row-preview">${segmentText(s)}</span>
+          <span class="row-preview">${escapeHtml(segmentText(s))}</span>
           ${moveBtns}
           <button class="remove-btn" data-action="remove" title="Remove">✕</button>
         `;
       }
       segmentsEl.appendChild(row);
+
+      // Set initial content via the .value property (LaTeX) rather than an
+      // HTML attribute — the reliable way to seed a math-field's content.
+      row.querySelectorAll("math-field[data-action]").forEach((mf) => {
+        const action = mf.dataset.action;
+        if (action === "left-val") mf.value = s.leftVal;
+        else if (action === "right-val") mf.value = s.rightVal;
+        else if (action === "point-val") mf.value = s.pointVal;
+      });
     });
   }
 
@@ -182,12 +255,12 @@ export function createDomainBuilder(elements, options = {}) {
     const finiteVals = [];
     segments.forEach((s) => {
       if (s.type === "interval") {
-        const l = parseNum(s.leftVal), r = parseNum(s.rightVal);
-        if (!s.leftInf && l !== null) finiteVals.push(l);
-        if (!s.rightInf && r !== null) finiteVals.push(r);
+        const l = evaluateExpr(s.leftVal), r = evaluateExpr(s.rightVal);
+        if (l !== null && Number.isFinite(l)) finiteVals.push(l);
+        if (r !== null && Number.isFinite(r)) finiteVals.push(r);
       } else {
-        const p = parseNum(s.pointVal);
-        if (p !== null) finiteVals.push(p);
+        const p = evaluateExpr(s.pointVal);
+        if (p !== null && Number.isFinite(p)) finiteVals.push(p);
       }
     });
 
@@ -233,28 +306,33 @@ export function createDomainBuilder(elements, options = {}) {
       const color = SEG_COLORS[i % SEG_COLORS.length];
       const y = axisY;
 
-      const l = s.leftInf ? min - 1 : parseNum(s.leftVal);
-      const r = s.rightInf ? max + 1 : parseNum(s.rightVal);
-      if (l === null || r === null) return;
-      const x1 = s.leftInf ? pad - 8 : x(Math.max(l, min));
-      const x2 = s.rightInf ? width - pad + 8 : x(Math.min(r, max));
-      if (x2 <= x1 && !s.leftInf && !s.rightInf) return;
+      const lRaw = evaluateExpr(s.leftVal);
+      const rRaw = evaluateExpr(s.rightVal);
+      if (lRaw === null || rRaw === null) return;
+      const lInf = !Number.isFinite(lRaw), rInf = !Number.isFinite(rRaw);
+      const l = lInf ? min - 1 : lRaw;
+      const r = rInf ? max + 1 : rRaw;
+      const x1 = lInf ? pad - 8 : x(Math.max(l, min));
+      const x2 = rInf ? width - pad + 8 : x(Math.min(r, max));
+      if (x2 <= x1 && !lInf && !rInf) return;
 
       svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt"/>`;
 
-      if (!s.leftInf) {
+      if (!lInf) {
         const cx = x(l);
+        const label = escapeHtml(latexToPlainText(s.leftVal));
         svg += s.leftClosed
           ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
           : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
-        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${l}</text>`;
+        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
       }
-      if (!s.rightInf) {
+      if (!rInf) {
         const cx = x(r);
+        const label = escapeHtml(latexToPlainText(s.rightVal));
         svg += s.rightClosed
           ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
           : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
-        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${r}</text>`;
+        svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
       }
     });
 
@@ -263,13 +341,14 @@ export function createDomainBuilder(elements, options = {}) {
       const color = SEG_COLORS[i % SEG_COLORS.length];
       const y = axisY;
 
-      const p = parseNum(s.pointVal);
-      if (p === null || p < min || p > max) return;
+      const p = evaluateExpr(s.pointVal);
+      if (p === null || !Number.isFinite(p) || p < min || p > max) return;
       const cx = x(p);
+      const label = escapeHtml(latexToPlainText(s.pointVal));
       svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3"/>`;
       svg += `<line x1="${cx - 5}" y1="${y - 5}" x2="${cx + 5}" y2="${y + 5}" stroke="${color}" stroke-width="2"/>`;
       svg += `<line x1="${cx - 5}" y1="${y + 5}" x2="${cx + 5}" y2="${y - 5}" stroke="${color}" stroke-width="2"/>`;
-      svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${p}</text>`;
+      svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
     });
 
     svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#9aa0b8">x</text>`;
@@ -304,26 +383,33 @@ export function createDomainBuilder(elements, options = {}) {
       case "toggle-right-bracket":
         s.rightClosed = !s.rightClosed;
         break;
-      case "toggle-left-inf":
-        s.leftInf = !s.leftInf;
-        if (s.leftInf) { s.leftClosed = false; s.leftVal = ""; }
-        break;
-      case "toggle-right-inf":
-        s.rightInf = !s.rightInf;
-        if (s.rightInf) { s.rightClosed = false; s.rightVal = ""; }
-        break;
       case "move-up":
         moveSegment(id, -1);
         return;
       case "move-down":
         moveSegment(id, 1);
         return;
+      case "toggle-menu": {
+        const menu = btn.nextElementSibling;
+        const wasHidden = menu.classList.contains("hidden");
+        closeAllMenus();
+        if (wasHidden) menu.classList.remove("hidden");
+        return;
+      }
+      case "insert": {
+        const mf = btn.closest(".field-wrap").querySelector("math-field");
+        mf.focus();
+        mf.insert(SYMBOL_INSERTS[btn.dataset.insert]);
+        mf.dispatchEvent(new Event("input", { bubbles: true }));
+        closeAllMenus();
+        return;
+      }
     }
     render();
   });
 
   segmentsEl.addEventListener("input", (e) => {
-    const input = e.target.closest("input[data-action]");
+    const input = e.target.closest("math-field[data-action]");
     if (!input) return;
     const row = e.target.closest(".segment-row");
     const id = Number(row.dataset.id);
@@ -344,6 +430,15 @@ export function createDomainBuilder(elements, options = {}) {
       rowNow.classList.toggle("invalid", !valid);
       const previewSpan = rowNow.querySelector(".row-preview");
       if (previewSpan) previewSpan.textContent = segmentText(s);
+
+      if (s.type === "interval") {
+        const lInf = isInf(evaluateExpr(s.leftVal));
+        const rInf = isInf(evaluateExpr(s.rightVal));
+        const leftBtn = rowNow.querySelector('[data-action="toggle-left-bracket"]');
+        const rightBtn = rowNow.querySelector('[data-action="toggle-right-bracket"]');
+        if (leftBtn) { leftBtn.disabled = lInf; leftBtn.textContent = lInf ? "(" : (s.leftClosed ? "[" : "("); }
+        if (rightBtn) { rightBtn.disabled = rInf; rightBtn.textContent = rInf ? ")" : (s.rightClosed ? "]" : ")"); }
+      }
     }
     if (onChange) onChange(getSegments());
   });

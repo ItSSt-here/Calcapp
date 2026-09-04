@@ -8,19 +8,21 @@
 // outside every interval or already excluded is vacuous and drops out.
 // Two domains are mathematically equal iff their canonical forms match.
 
+import { evaluateExpr } from "./math-expr.js";
+
 function toRawPieces(segments) {
   const pieces = [];
   for (const s of segments) {
     if (s.type !== "interval") continue;
-    const left = s.leftInf ? -Infinity : parseFloat(s.leftVal);
-    const right = s.rightInf ? Infinity : parseFloat(s.rightVal);
-    if (Number.isNaN(left) || Number.isNaN(right)) continue;
+    const left = evaluateExpr(s.leftVal);
+    const right = evaluateExpr(s.rightVal);
+    if (left === null || right === null) continue;
     if (left >= right) continue;
     pieces.push({
       left,
-      leftClosed: s.leftInf ? false : !!s.leftClosed,
+      leftClosed: Number.isFinite(left) ? !!s.leftClosed : false,
       right,
-      rightClosed: s.rightInf ? false : !!s.rightClosed,
+      rightClosed: Number.isFinite(right) ? !!s.rightClosed : false,
     });
   }
   return pieces;
@@ -61,8 +63,8 @@ function collectPoints(segments) {
   const pts = new Set();
   for (const s of segments) {
     if (s.type !== "point") continue;
-    const v = parseFloat(s.pointVal);
-    if (Number.isFinite(v)) pts.add(v);
+    const v = evaluateExpr(s.pointVal);
+    if (v !== null && Number.isFinite(v)) pts.add(v);
   }
   return [...pts];
 }

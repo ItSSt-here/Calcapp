@@ -101,40 +101,94 @@ h1 {
   cursor: not-allowed;
 }
 
-.value-input {
-  width: 64px;
+math-field.value-input {
+  display: inline-block;
+  min-width: 56px;
   font-size: 1rem;
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid var(--border);
-  text-align: center;
 }
 
-.value-input:disabled {
-  background: #eee;
-  color: var(--muted);
-}
-
-.inf-btn {
-  font-size: 0.85rem;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: white;
-  cursor: pointer;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.inf-btn.active {
-  background: var(--accent);
+math-field.value-input:focus-within {
   border-color: var(--accent);
-  color: white;
+  outline: none;
+}
+
+/* We supply our own insert toolbar — hide MathLive's built-in inline
+   keyboard-toggle and menu icons so each field stays compact. */
+math-field.value-input::part(virtual-keyboard-toggle),
+math-field.value-input::part(menu-toggle) {
+  display: none;
 }
 
 .comma {
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------------- */
+/* Per-field symbol menu (small caret at the corner of each math-field)   */
+/* ---------------------------------------------------------------------- */
+
+.field-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.field-menu-btn {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  line-height: 1;
+  font-size: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.field-menu-btn:hover { background: #eef0fb; border-color: var(--accent); color: var(--accent); }
+
+.field-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 6px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(20, 22, 30, 0.15);
+}
+
+.field-menu.hidden {
+  display: none;
+}
+
+.field-menu-item {
+  font-family: "Cambria Math", Georgia, serif;
+  font-size: 1rem;
+  width: 32px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.field-menu-item:hover { background: #eef0fb; border-color: var(--accent); }
 
 .point-label {
   font-weight: 600;
