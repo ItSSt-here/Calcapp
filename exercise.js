@@ -163,7 +163,7 @@ function instantiateExercise(def) {
 
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
-const answerLabelEl = document.getElementById("answerLabel");
+const solutionLabelEl = document.getElementById("solutionLabel");
 const previewEl = document.getElementById("preview");
 const numberLineEl = document.getElementById("numberLine");
 const confirmOverlayEl = document.getElementById("confirmOverlay");
@@ -209,8 +209,7 @@ function loadExercise(exercise) {
 
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
-  answerLabelEl.textContent = "Your answer";
-  answerLabelEl.classList.remove("showing-solution");
+  solutionLabelEl.classList.add("hidden");
   confirmOverlayEl.classList.add("hidden");
   pendingRealsGuess = null;
 
@@ -291,8 +290,7 @@ solutionBtn.addEventListener("click", () => {
 
   // Replace the student's own preview/number-line — not their input rows —
   // with the correct answer's, right where their own would normally render.
-  answerLabelEl.textContent = "Solution (not necessarily the only correct form)";
-  answerLabelEl.classList.add("showing-solution");
+  solutionLabelEl.classList.remove("hidden");
   previewEl.classList.remove("empty");
   previewEl.innerHTML = "";
   previewEl.appendChild(buildPreviewFragment(currentExercise.correct));

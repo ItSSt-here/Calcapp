@@ -61,7 +61,12 @@ h1 {
 }
 
 .label.showing-solution {
+  margin-top: 14px;
   color: #b45309;
+}
+
+.label.hidden {
+  display: none;
 }
 
 /* ---------------------------------------------------------------------- */
