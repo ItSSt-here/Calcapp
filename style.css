@@ -25,6 +25,12 @@ body {
   display: flex;
   justify-content: center;
   padding: 40px 16px;
+  /* A math-field can render wider than the screen after a symbol insert
+     (e.g. a square root). Without this, mobile browsers respond to that
+     overflow by auto-zooming the whole page out to fit it, which then
+     desyncs MathLive's virtual keyboard (positioned for the original
+     viewport) and leaves it rendered off-screen. */
+  overflow-x: hidden;
 }
 
 .container {
