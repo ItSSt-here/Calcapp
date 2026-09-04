@@ -6,6 +6,12 @@
   --border: #e2e5ec;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
+  --good: #16a34a;
+  --good-hover: #15803d;
+  --warn: #b45309;
+  --warn-bg: #fffbeb;
+  --warn-bg-hover: #fef3c7;
+  --warn-border: #fde68a;
   --bad: #dc2626;
   --seg-colors: #4f46e5, #0891b2, #b45309, #db2777, #16a34a;
 }
@@ -44,6 +50,7 @@ h1 {
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(20, 22, 30, 0.04);
 }
 
 .label {
@@ -92,9 +99,15 @@ h1 {
   cursor: pointer;
   color: var(--text);
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(20, 22, 30, 0.06);
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.bracket-btn:hover:not(:disabled) { background: #eef0fb; border-color: var(--accent); }
+.bracket-btn:hover:not(:disabled) {
+  background: #eef0fb;
+  border-color: var(--accent);
+  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.15);
+}
 
 .bracket-btn:disabled {
   opacity: 0.4;
@@ -123,7 +136,12 @@ math-field.value-input::part(menu-toggle) {
 }
 
 .comma {
-  color: var(--muted);
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  align-self: center;
+  transform: translateY(3px);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -260,23 +278,38 @@ math-field.value-input::part(menu-toggle) {
 
 .add-btn {
   font-size: 0.9rem;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: white;
   color: var(--accent);
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(20, 22, 30, 0.06);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
 }
 
-.add-btn:hover { background: #eef0fb; }
+.add-btn:hover {
+  background: #eef0fb;
+  border-color: #c7cdf7;
+  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.15);
+}
+
+.add-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 1px rgba(20, 22, 30, 0.08);
+}
 
 .clear-btn {
   color: var(--muted);
   margin-left: auto;
 }
 
-.clear-btn:hover { background: #f3f4f6; }
+.clear-btn:hover {
+  background: #f3f4f6;
+  border-color: #d4d7de;
+  box-shadow: 0 2px 5px rgba(20, 22, 30, 0.08);
+}
 
 /* ---------------------------------------------------------------------- */
 /* Preview                                                                */

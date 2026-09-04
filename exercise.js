@@ -73,7 +73,7 @@ const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
 const solutionBoxEl = document.getElementById("solutionBox");
 const solutionPreviewEl = document.getElementById("solutionPreview");
-const confirmBoxEl = document.getElementById("confirmBox");
+const confirmOverlayEl = document.getElementById("confirmOverlay");
 const confirmTextEl = document.getElementById("confirmText");
 const checkBtn = document.getElementById("checkBtn");
 const solutionBtn = document.getElementById("solutionBtn");
@@ -118,7 +118,7 @@ function loadExercise(exercise) {
   feedbackEl.textContent = "";
   solutionBoxEl.classList.add("hidden");
   solutionPreviewEl.innerHTML = "";
-  confirmBoxEl.classList.add("hidden");
+  confirmOverlayEl.classList.add("hidden");
   pendingRealsGuess = null;
 
   checkBtn.disabled = false;
@@ -155,7 +155,7 @@ function showRealsSuggestion(pointSegments) {
   pendingRealsGuess = [{ ...ALL_REALS }, ...pointSegments];
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
-  confirmBoxEl.classList.remove("hidden");
+  confirmOverlayEl.classList.remove("hidden");
 }
 
 checkBtn.addEventListener("click", () => {
@@ -164,7 +164,7 @@ checkBtn.addEventListener("click", () => {
   if (segments.length > 0 && !builder.isValid()) {
     feedbackEl.className = "feedback info";
     feedbackEl.textContent = "Some rows are incomplete — fill in every value before checking.";
-    confirmBoxEl.classList.add("hidden");
+    confirmOverlayEl.classList.add("hidden");
     return;
   }
 
@@ -176,25 +176,25 @@ checkBtn.addEventListener("click", () => {
     return;
   }
 
-  confirmBoxEl.classList.add("hidden");
+  confirmOverlayEl.classList.add("hidden");
   gradeSegments(segments);
 });
 
 confirmYesBtn.addEventListener("click", () => {
-  confirmBoxEl.classList.add("hidden");
+  confirmOverlayEl.classList.add("hidden");
   gradeSegments(pendingRealsGuess);
   pendingRealsGuess = null;
 });
 
 confirmBackBtn.addEventListener("click", () => {
-  confirmBoxEl.classList.add("hidden");
+  confirmOverlayEl.classList.add("hidden");
   pendingRealsGuess = null;
 });
 
 solutionBtn.addEventListener("click", () => {
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
-  confirmBoxEl.classList.add("hidden");
+  confirmOverlayEl.classList.add("hidden");
   solutionBoxEl.classList.remove("hidden");
   solutionPreviewEl.innerHTML = "";
   solutionPreviewEl.appendChild(buildPreviewFragment(currentExercise.correct));
