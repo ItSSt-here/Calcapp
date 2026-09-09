@@ -38,6 +38,20 @@ function quadraticLatex(b, c) {
   return `x^2${signedTerm(b, "x")}${signedTerm(c, "")}`;
 }
 
+function gcd(a, b) {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+// a/b already in lowest terms, b >= 2 (never an integer exponent in disguise).
+function randCoprimeFraction() {
+  let a, b;
+  do {
+    b = randInt(2, 6);
+    a = randInt(1, 9);
+  } while (gcd(a, b) !== 1);
+  return { a, b };
+}
+
 const EXERCISES = [
   {
     id: "ln-x",
@@ -93,6 +107,37 @@ const EXERCISES = [
     correct: [
       { type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
     ],
+  },
+  {
+    // x^(a/b), a/b in lowest terms: domain hinges only on the parity of the
+    // (already reduced) denominator b — even b needs x>=0, odd b allows all
+    // reals, regardless of a's own parity.
+    id: "x-to-frac-pos",
+    generate: () => {
+      const { a, b } = randCoprimeFraction();
+      const evenDenominator = b % 2 === 0;
+      return {
+        prompt: `f(x) = x^{\\frac{${a}}{${b}}}`,
+        correct: evenDenominator
+          ? [{ type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" }]
+          : [{ ...ALL_REALS }],
+      };
+    },
+  },
+  {
+    // x^(-a/b) = 1/x^(a/b): same parity rule as above, but x=0 is always
+    // excluded since it's now a denominator.
+    id: "x-to-frac-neg",
+    generate: () => {
+      const { a, b } = randCoprimeFraction();
+      const evenDenominator = b % 2 === 0;
+      return {
+        prompt: `f(x) = x^{-\\frac{${a}}{${b}}}`,
+        correct: evenDenominator
+          ? [{ type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" }]
+          : [{ ...ALL_REALS }, { type: "point", pointVal: "0" }],
+      };
+    },
   },
   {
     // arcsin and arccos share the same domain [-1,1] — one exercise, prompt
