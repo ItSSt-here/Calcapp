@@ -129,6 +129,74 @@ const EXERCISES = [
     },
   },
   {
+    // ln(ax+b): needs ax+b > 0 — same root/sign logic as sqrt-linear, but
+    // strict since ln(0) is undefined too.
+    id: "ln-linear",
+    generate: () => {
+      const { a, b, r } = randLinearWithRoot();
+      return {
+        prompt: `f(x) = \\ln\\left(${linearLatex(a, b)}\\right)`,
+        correct: [
+          a > 0
+            ? { type: "interval", leftClosed: false, leftVal: String(r), rightClosed: false, rightVal: "\\infty" }
+            : { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(r) },
+        ],
+      };
+    },
+  },
+  {
+    // ln(x^2+Bx+C): needs the quadratic > 0 — same case split and brackets
+    // as one-over-sqrt-quadratic (strict throughout, since ln(0) is also
+    // undefined, not just negative values):
+    //   70% two distinct roots a<b:  outside [a,b], open -> (-inf,a) u (b,inf)
+    //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
+    //   15% no real root:            always > 0 already -> R
+    id: "ln-quadratic-3cases",
+    generate: () => {
+      const roll = Math.random();
+      let b, c, correct;
+      if (roll < 0.70) {
+        const { lo, hi, b: rb, c: rc } = randTwoRoots();
+        b = rb;
+        c = rc;
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
+          { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 0.85) {
+        const a = randInt(-9, 9);
+        b = -2 * a;
+        c = a * a;
+        correct = [{ ...ALL_REALS }, { type: "point", pointVal: String(a) }];
+      } else {
+        const a = randIntExcluding(-9, 9, 0);
+        const k = randInt(1, 9);
+        b = -2 * a;
+        c = a * a + k;
+        correct = [{ ...ALL_REALS }];
+      }
+      return {
+        prompt: `f(x) = \\ln\\left(${quadraticLatex(b, c)}\\right)`,
+        correct,
+      };
+    },
+  },
+  {
+    // ln(-x^2-Bx-C): only the two-distinct-roots case, where -(quadratic) > 0
+    // strictly between the roots — an open bounded interval (the mirror of
+    // sqrt-neg-quadratic's closed one, since 0 itself is now excluded).
+    id: "ln-neg-quadratic",
+    generate: () => {
+      const { lo, hi, b, c } = randTwoRoots();
+      return {
+        prompt: `f(x) = \\ln\\left(${negQuadraticLatex(b, c)}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: String(lo), rightClosed: false, rightVal: String(hi) },
+        ],
+      };
+    },
+  },
+  {
     id: "e-to-x",
     prompt: "f(x) = e^x",
     correct: [{ ...ALL_REALS }],
