@@ -145,6 +145,28 @@ const EXERCISES = [
     },
   },
   {
+    // 1/ln(ax+b): needs ax+b > 0 (ln defined) AND ax+b != 1 (ln != 0, so the
+    // reciprocal is defined). Two boundary x-values, r0 where ax+b=0 and r1
+    // where ax+b=1 — for BOTH to land on clean integers we need a = ±1,
+    // since r1 - r0 = 1/a forces a to divide 1. With a = ±1, r1 = r0 + a.
+    id: "one-over-ln-linear",
+    generate: () => {
+      const r0 = randInt(-6, 6);
+      const a = Math.random() < 0.5 ? 1 : -1;
+      const b = -a * r0;
+      const r1 = r0 + a;
+      return {
+        prompt: `f(x) = \\frac{1}{\\ln\\left(${linearLatex(a, b)}\\right)}`,
+        correct: [
+          a > 0
+            ? { type: "interval", leftClosed: false, leftVal: String(r0), rightClosed: false, rightVal: "\\infty" }
+            : { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(r0) },
+          { type: "point", pointVal: String(r1) },
+        ],
+      };
+    },
+  },
+  {
     // ln(x^2+Bx+C): needs the quadratic > 0 — same case split and brackets
     // as one-over-sqrt-quadratic (strict throughout, since ln(0) is also
     // undefined, not just negative values):
