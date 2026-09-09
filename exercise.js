@@ -358,6 +358,16 @@ const EXERCISES = [
     }),
   },
   {
+    // arcsin(ln(x)) and arccos(ln(x)) share the same domain: ln(x) needs to
+    // be defined (x>0) AND land inside arcsin/arccos's own domain [-1,1],
+    // i.e. -1 <= ln(x) <= 1  <=>  e^-1 <= x <= e.
+    id: "arcsin-or-arccos-of-ln",
+    generate: () => ({
+      prompt: pick(["f(x) = \\arcsin\\left(\\ln(x)\\right)", "f(x) = \\arccos\\left(\\ln(x)\\right)"]),
+      correct: [{ type: "interval", leftClosed: true, leftVal: "e^{-1}", rightClosed: true, rightVal: "e" }],
+    }),
+  },
+  {
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
