@@ -88,6 +88,13 @@ const EXERCISES = [
     correct: [{ ...ALL_REALS }],
   },
   {
+    id: "sqrt-x",
+    prompt: "f(x) = \\sqrt{x}",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
+    ],
+  },
+  {
     // arcsin and arccos share the same domain [-1,1] — one exercise, prompt
     // picked at random each time.
     id: "arcsin-or-arccos",
