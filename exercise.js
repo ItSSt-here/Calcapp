@@ -38,6 +38,38 @@ function quadraticLatex(b, c) {
   return `x^2${signedTerm(b, "x")}${signedTerm(c, "")}`;
 }
 
+// "-x^2 + Bx + C" — the same quadratic with every coefficient's sign flipped,
+// for the downward-opening-parabola exercises.
+function negQuadraticLatex(b, c) {
+  return `-x^2${signedTerm(-b, "x")}${signedTerm(-c, "")}`;
+}
+
+// "Ax + B", A guaranteed nonzero so it's always a genuine linear term.
+function linearLatex(a, b) {
+  const abs = Math.abs(a);
+  const magnitude = abs === 1 ? "" : String(abs);
+  return `${a < 0 ? "-" : ""}${magnitude}x${signedTerm(b, "")}`;
+}
+
+// Two distinct integer roots -9..9, and the (b, c) of the expanded
+// x^2 + bx + c that has them — shared by every "quadratic with two roots"
+// exercise case.
+function randTwoRoots() {
+  const a1 = randInt(-9, 9);
+  const a2 = randIntExcluding(-9, 9, a1);
+  const [lo, hi] = a1 < a2 ? [a1, a2] : [a2, a1];
+  return { lo, hi, b: -(a1 + a2), c: a1 * a2 };
+}
+
+// A nonzero coefficient (|a| >= 2, so it's never invisible in the prompt)
+// and the b that puts ax+b's root at a clean integer.
+function randLinearWithRoot() {
+  const r = randInt(-6, 6);
+  let a;
+  do { a = randInt(-5, 5); } while (Math.abs(a) < 2);
+  return { a, b: -a * r, r };
+}
+
 function gcd(a, b) {
   return b === 0 ? a : gcd(b, a % b);
 }
@@ -178,11 +210,9 @@ const EXERCISES = [
       const roll = Math.random();
       let b, c, correct;
       if (roll < 0.70) {
-        const a1 = randInt(-9, 9);
-        const a2 = randIntExcluding(-9, 9, a1);
-        b = -(a1 + a2);
-        c = a1 * a2;
-        const [lo, hi] = a1 < a2 ? [a1, a2] : [a2, a1];
+        const { lo, hi, b: rb, c: rc } = randTwoRoots();
+        b = rb;
+        c = rc;
         correct = [
           { ...ALL_REALS },
           { type: "point", pointVal: String(lo) },
@@ -202,6 +232,128 @@ const EXERCISES = [
       }
       return {
         prompt: `f(x) = \\frac{1}{${quadraticLatex(b, c)}}`,
+        correct,
+      };
+    },
+  },
+  {
+    // sqrt(ax+b): needs ax+b >= 0. Which side of the root is included flips
+    // with the sign of a.
+    id: "sqrt-linear",
+    generate: () => {
+      const { a, b, r } = randLinearWithRoot();
+      return {
+        prompt: `f(x) = \\sqrt{${linearLatex(a, b)}}`,
+        correct: [
+          a > 0
+            ? { type: "interval", leftClosed: true, leftVal: String(r), rightClosed: false, rightVal: "\\infty" }
+            : { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(r) },
+        ],
+      };
+    },
+  },
+  {
+    // sqrt(x^2+Bx+C): needs the quadratic >= 0. Same 3-way case split as
+    // one-over-quadratic, but unlike a denominator, a root value of 0 is
+    // fine under a square root — so both the repeated-root and no-root
+    // cases give plain R, with nothing excluded.
+    //   70% two distinct roots a<b:  outside [a,b]     -> (-inf,a] u [b,inf)
+    //   15% one repeated root:       always >= 0        -> R
+    //   15% no real root:            always > 0          -> R
+    id: "sqrt-quadratic-3cases",
+    generate: () => {
+      const roll = Math.random();
+      let b, c, correct;
+      if (roll < 0.70) {
+        const { lo, hi, b: rb, c: rc } = randTwoRoots();
+        b = rb;
+        c = rc;
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(lo) },
+          { type: "interval", leftClosed: true, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 0.85) {
+        const a = randInt(-9, 9);
+        b = -2 * a;
+        c = a * a;
+        correct = [{ ...ALL_REALS }];
+      } else {
+        const a = randIntExcluding(-9, 9, 0);
+        const k = randInt(1, 9);
+        b = -2 * a;
+        c = a * a + k;
+        correct = [{ ...ALL_REALS }];
+      }
+      return {
+        prompt: `f(x) = \\sqrt{${quadraticLatex(b, c)}}`,
+        correct,
+      };
+    },
+  },
+  {
+    // sqrt(-x^2-Bx-C), i.e. sqrt(-(x^2+Bx+C)): only the two-distinct-roots
+    // case, where -(quadratic) >= 0 exactly between the roots (inclusive) —
+    // a bounded closed interval, the mirror image of the "excluded middle"
+    // case above.
+    id: "sqrt-neg-quadratic",
+    generate: () => {
+      const { lo, hi, b, c } = randTwoRoots();
+      return {
+        prompt: `f(x) = \\sqrt{${negQuadraticLatex(b, c)}}`,
+        correct: [
+          { type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: true, rightVal: String(hi) },
+        ],
+      };
+    },
+  },
+  {
+    // 1/sqrt(ax+b): same root as sqrt-linear, but now strict since x=root
+    // itself would make the denominator 0.
+    id: "one-over-sqrt-linear",
+    generate: () => {
+      const { a, b, r } = randLinearWithRoot();
+      return {
+        prompt: `f(x) = \\frac{1}{\\sqrt{${linearLatex(a, b)}}}`,
+        correct: [
+          a > 0
+            ? { type: "interval", leftClosed: false, leftVal: String(r), rightClosed: false, rightVal: "\\infty" }
+            : { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(r) },
+        ],
+      };
+    },
+  },
+  {
+    // 1/sqrt(x^2+Bx+C): same 3 cases as sqrt-quadratic-3cases, but every
+    // boundary tightens to strict since the quadratic can no longer be 0:
+    //   70% two distinct roots a<b:  outside [a,b], open -> (-inf,a) u (b,inf)
+    //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
+    //   15% no real root:            always > 0 already -> R
+    id: "one-over-sqrt-quadratic",
+    generate: () => {
+      const roll = Math.random();
+      let b, c, correct;
+      if (roll < 0.70) {
+        const { lo, hi, b: rb, c: rc } = randTwoRoots();
+        b = rb;
+        c = rc;
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
+          { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 0.85) {
+        const a = randInt(-9, 9);
+        b = -2 * a;
+        c = a * a;
+        correct = [{ ...ALL_REALS }, { type: "point", pointVal: String(a) }];
+      } else {
+        const a = randIntExcluding(-9, 9, 0);
+        const k = randInt(1, 9);
+        b = -2 * a;
+        c = a * a + k;
+        correct = [{ ...ALL_REALS }];
+      }
+      return {
+        prompt: `f(x) = \\frac{1}{\\sqrt{${quadraticLatex(b, c)}}}`,
         correct,
       };
     },
