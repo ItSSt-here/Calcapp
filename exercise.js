@@ -204,6 +204,56 @@ const EXERCISES = [
     },
   },
   {
+    // 1/ln(x^2+c), the symmetric b=0 case: unlike the general quadratic,
+    // x^2+c=1 always solves in closed form as x=+-sqrt(1-c) regardless of
+    // c, so every range of c stays clean (irrational boundaries are fine —
+    // no need to hunt for perfect squares here):
+    //   70% c<0 (c=-a):    (-inf,-sqrt(a)) u (sqrt(a),inf), minus +-sqrt(a+1)
+    //   20% 0<c<1:         R, minus +-sqrt(1-c)
+    //    5% c>1:           R (x^2+c never dips to 1 or below)
+    //    5% c=1:           R, minus {0}
+    id: "one-over-ln-x2-plus-c",
+    generate: () => {
+      const roll = Math.random();
+      if (roll < 0.70) {
+        const a = randInt(1, 9);
+        return {
+          prompt: `f(x) = \\frac{1}{\\ln\\left(x^2-${a}\\right)}`,
+          correct: [
+            { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: `-\\sqrt{${a}}` },
+            { type: "interval", leftClosed: false, leftVal: `\\sqrt{${a}}`, rightClosed: false, rightVal: "\\infty" },
+            { type: "point", pointVal: `-\\sqrt{${a + 1}}` },
+            { type: "point", pointVal: `\\sqrt{${a + 1}}` },
+          ],
+        };
+      }
+      if (roll < 0.90) {
+        const k = randInt(1, 9);
+        const c = k / 10;
+        const boundary = (10 - k) / 10;
+        return {
+          prompt: `f(x) = \\frac{1}{\\ln\\left(x^2+${c}\\right)}`,
+          correct: [
+            { ...ALL_REALS },
+            { type: "point", pointVal: `-\\sqrt{${boundary}}` },
+            { type: "point", pointVal: `\\sqrt{${boundary}}` },
+          ],
+        };
+      }
+      if (roll < 0.95) {
+        const c = randInt(2, 9);
+        return {
+          prompt: `f(x) = \\frac{1}{\\ln\\left(x^2+${c}\\right)}`,
+          correct: [{ ...ALL_REALS }],
+        };
+      }
+      return {
+        prompt: "f(x) = \\frac{1}{\\ln\\left(x^2+1\\right)}",
+        correct: [{ ...ALL_REALS }, { type: "point", pointVal: "0" }],
+      };
+    },
+  },
+  {
     // ln(x^2+Bx+C): needs the quadratic > 0 — same case split and brackets
     // as one-over-sqrt-quadratic (strict throughout, since ln(0) is also
     // undefined, not just negative values):
