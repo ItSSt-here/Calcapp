@@ -167,6 +167,43 @@ const EXERCISES = [
     },
   },
   {
+    // 1/ln(x^2+Bx+C): needs the quadratic > 0 (ln defined) AND != 1 (ln !=
+    // 0). The two boundary discriminants always differ by exactly 4
+    // (D1 = D0 + 4, from completing q(x)=1 as q(x)-1=0), which rules out
+    // ever having two *distinct* clean integer roots at both levels — that
+    // would need D0=k^2 and D0+4=m^2 simultaneously, forcing the
+    // degenerate k=0. Two other families stay clean though:
+    //   - perfect square (x-p)^2 (D0=0): q=1 factors as (x-p-1)(x-p+1),
+    //     excluding 3 consecutive integers {p-1, p, p+1}.
+    //   - no real root (D0<0) but q=1 has two roots: those roots are only
+    //     integers when they're consecutive m, m+1 (any wider gap forces
+    //     D0>=0), excluding 2 consecutive integers {m, m+1}.
+    id: "one-over-ln-quadratic",
+    generate: () => {
+      if (Math.random() < 0.5) {
+        const p = randInt(-8, 8);
+        return {
+          prompt: `f(x) = \\frac{1}{\\ln\\left(${quadraticLatex(-2 * p, p * p)}\\right)}`,
+          correct: [
+            { ...ALL_REALS },
+            { type: "point", pointVal: String(p - 1) },
+            { type: "point", pointVal: String(p) },
+            { type: "point", pointVal: String(p + 1) },
+          ],
+        };
+      }
+      const m = randInt(-8, 7);
+      return {
+        prompt: `f(x) = \\frac{1}{\\ln\\left(${quadraticLatex(-(2 * m + 1), m * m + m + 1)}\\right)}`,
+        correct: [
+          { ...ALL_REALS },
+          { type: "point", pointVal: String(m) },
+          { type: "point", pointVal: String(m + 1) },
+        ],
+      };
+    },
+  },
+  {
     // ln(x^2+Bx+C): needs the quadratic > 0 — same case split and brackets
     // as one-over-sqrt-quadratic (strict throughout, since ln(0) is also
     // undefined, not just negative values):
