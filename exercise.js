@@ -414,6 +414,37 @@ const EXERCISES = [
     ],
   },
   {
+    // sqrt(ln(x)): needs ln(x) defined (x>0) AND non-negative (for the
+    // sqrt) — ln(x)>=0 <=> x>=1, the stronger bound. Sibling of ln-of-ln
+    // with the two functions swapped.
+    id: "sqrt-of-ln",
+    prompt: "f(x) = \\sqrt{\\ln(x)}",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "1", rightClosed: false, rightVal: "\\infty" },
+    ],
+  },
+  {
+    // sqrt(arcsin(x)): needs arcsin(x) defined (x in [-1,1]) AND >=0.
+    // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), so it's >=0 only
+    // on [0,1] — a genuine extra restriction.
+    id: "sqrt-of-arcsin",
+    prompt: "f(x) = \\sqrt{\\arcsin(x)}",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "0", rightClosed: true, rightVal: "1" },
+    ],
+  },
+  {
+    // sqrt(arccos(x)): needs arccos(x) defined (x in [-1,1]) AND >=0 — but
+    // arccos ranges over [0,pi] on that whole domain, so it's ALWAYS >=0.
+    // The sqrt wrapper adds no restriction at all: domain stays [-1,1],
+    // a nice contrast with sqrt-of-arcsin right above.
+    id: "sqrt-of-arccos",
+    prompt: "f(x) = \\sqrt{\\arccos(x)}",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" },
+    ],
+  },
+  {
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
@@ -694,6 +725,23 @@ const EXERCISES = [
       return {
         prompt: `f(x) = ${fn}\\left(${quadraticLatex(b, c)}\\right)`,
         correct,
+      };
+    },
+  },
+  {
+    // ln(x-a) + ln(b-x): a *sum* of two independent ln conditions, unlike
+    // the quotient/nesting compositions elsewhere — each term needs its
+    // own factor positive (x>a and x<b), so the domain is their
+    // intersection, the open interval (a,b).
+    id: "ln-sum-bounded",
+    generate: () => {
+      const { lo, hi } = randTwoRoots();
+      const rightTerm = hi === 0 ? "-x" : `${hi}-x`;
+      return {
+        prompt: `f(x) = \\ln\\left(${linearLatex(1, -lo)}\\right) + \\ln\\left(${rightTerm}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: String(lo), rightClosed: false, rightVal: String(hi) },
+        ],
       };
     },
   },
