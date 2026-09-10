@@ -927,19 +927,84 @@ const EXERCISES = [
     },
   },
   {
-    // ln(x-a) + ln(b-x): a *sum* of two independent ln conditions, unlike
-    // the quotient/nesting compositions elsewhere — each term needs its
-    // own factor positive (x>a and x<b), so the domain is their
-    // intersection, the open interval (a,b).
-    id: "ln-sum-bounded",
+    // ln(x-a)+ln(b-x) or sqrt(x-a)+sqrt(b-x): genuinely merged this time —
+    // not because the two forms share a domain (they don't), but because
+    // they're the SAME underlying exercise (sum of two independent
+    // one-sided conditions, x>a and x<b, intersected) with a different
+    // boundary rule for each: ln needs each factor strictly positive
+    // (open interval (a,b)), sqrt only needs each factor non-negative
+    // (closed interval [a,b], since sqrt(0) is fine).
+    id: "sum-bounded-interval",
     generate: () => {
       const { lo, hi } = randTwoRoots();
       const rightTerm = hi === 0 ? "-x" : `${hi}-x`;
+      const leftTerm = linearLatex(1, -lo);
+      if (Math.random() < 0.5) {
+        return {
+          prompt: `f(x) = \\sqrt{${leftTerm}} + \\sqrt{${rightTerm}}`,
+          correct: [{ type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: true, rightVal: String(hi) }],
+        };
+      }
       return {
-        prompt: `f(x) = \\ln\\left(${linearLatex(1, -lo)}\\right) + \\ln\\left(${rightTerm}\\right)`,
-        correct: [
-          { type: "interval", leftClosed: false, leftVal: String(lo), rightClosed: false, rightVal: String(hi) },
-        ],
+        prompt: `f(x) = \\ln\\left(${leftTerm}\\right) + \\ln\\left(${rightTerm}\\right)`,
+        correct: [{ type: "interval", leftClosed: false, leftVal: String(lo), rightClosed: false, rightVal: String(hi) }],
+      };
+    },
+  },
+  {
+    // ln(sqrt(x)-a): needs x>=0 (sqrt defined) AND sqrt(x)>a.
+    //   a>0 (50%): sqrt(x)>a <=> x>a^2 (squaring is safe, both sides
+    //              non-negative) -> (a^2, inf)
+    //   a<0 (25%): sqrt(x)>=0>a always holds -> [0, inf) unchanged
+    //   a=0 (25%): sqrt(x)>0 <=> x>0 -> (0, inf)
+    id: "ln-of-shifted-sqrt",
+    generate: () => {
+      const roll = Math.random();
+      if (roll < 0.50) {
+        const a = randInt(1, 9);
+        return {
+          prompt: `f(x) = \\ln\\left(\\sqrt{x}${signedTerm(-a, "")}\\right)`,
+          correct: [{ type: "interval", leftClosed: false, leftVal: String(a * a), rightClosed: false, rightVal: "\\infty" }],
+        };
+      }
+      if (roll < 0.75) {
+        const a = randInt(-9, -1);
+        return {
+          prompt: `f(x) = \\ln\\left(\\sqrt{x}${signedTerm(-a, "")}\\right)`,
+          correct: [{ type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" }],
+        };
+      }
+      return {
+        prompt: "f(x) = \\ln\\left(\\sqrt{x}\\right)",
+        correct: [{ type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" }],
+      };
+    },
+  },
+  {
+    // 1/(|x|-a): needs |x| != a.
+    //   a>0 (50%): |x|=a at x=+-a -> excludes two points, R\{-a,a}
+    //   a=0 (25%): |x|=0 only at x=0 -> R\{0}
+    //   a<0 (25%): |x|>=0>a always, |x|-a is never 0 -> R unchanged
+    id: "one-over-abs-minus-a",
+    generate: () => {
+      const roll = Math.random();
+      if (roll < 0.50) {
+        const a = randInt(1, 9);
+        return {
+          prompt: `f(x) = \\frac{1}{|x|-${a}}`,
+          correct: [{ ...ALL_REALS }, { type: "point", pointVal: String(-a) }, { type: "point", pointVal: String(a) }],
+        };
+      }
+      if (roll < 0.75) {
+        return {
+          prompt: "f(x) = \\frac{1}{|x|}",
+          correct: [{ ...ALL_REALS }, { type: "point", pointVal: "0" }],
+        };
+      }
+      const a = randInt(-9, -1);
+      return {
+        prompt: `f(x) = \\frac{1}{|x|${signedTerm(-a, "")}}`,
+        correct: [{ ...ALL_REALS }],
       };
     },
   },
