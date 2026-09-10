@@ -368,6 +368,33 @@ const EXERCISES = [
     }),
   },
   {
+    // ln(ln(x)): needs ln(x) defined (x>0) AND positive, since it's now
+    // the outer ln's own argument — ln(x)>0 <=> x>1, the stronger bound.
+    id: "ln-of-ln",
+    prompt: "f(x) = \\ln\\left(\\ln(x)\\right)",
+    correct: [
+      { type: "interval", leftClosed: false, leftVal: "1", rightClosed: false, rightVal: "\\infty" },
+    ],
+  },
+  {
+    // ln(arccos(x)): needs arccos(x) defined (x in [-1,1]) AND positive.
+    // arccos decreases from pi (x=-1) to 0 (x=1), hitting 0 only at x=1.
+    id: "ln-of-arccos",
+    prompt: "f(x) = \\ln\\left(\\arccos(x)\\right)",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: false, rightVal: "1" },
+    ],
+  },
+  {
+    // ln(arcsin(x)): needs arcsin(x) defined (x in [-1,1]) AND positive.
+    // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), hitting 0 only at x=0.
+    id: "ln-of-arcsin",
+    prompt: "f(x) = \\ln\\left(\\arcsin(x)\\right)",
+    correct: [
+      { type: "interval", leftClosed: false, leftVal: "0", rightClosed: true, rightVal: "1" },
+    ],
+  },
+  {
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
