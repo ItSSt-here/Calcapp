@@ -489,6 +489,55 @@ const EXERCISES = [
     }),
   },
   {
+    // sqrt((x-a)/(x-b)): the classic sign-chart rational exercise — needs
+    // (x-a)/(x-b) >= 0 and x!=b. The ratio is positive outside [lo,hi] and
+    // negative inside it regardless of which root is the numerator, but
+    // WHICH endpoint is closed depends on that labeling: closed at the
+    // numerator's root (ratio=0 there, sqrt(0) fine), open/excluded at the
+    // denominator's root.
+    id: "sqrt-of-linear-ratio",
+    generate: () => {
+      const { lo, hi } = randTwoRoots();
+      const aIsLo = Math.random() < 0.5;
+      const a = aIsLo ? lo : hi;
+      const b = aIsLo ? hi : lo;
+      return {
+        prompt: `f(x) = \\sqrt{\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}}`,
+        correct: aIsLo
+          ? [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(lo) },
+              { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+            ]
+          : [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
+              { type: "interval", leftClosed: true, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+            ],
+      };
+    },
+  },
+  {
+    // 1/sqrt((x-a)/(x-b)) or ln((x-a)/(x-b)): both need the SAME thing —
+    // (x-a)/(x-b) > 0 strictly — so they're merged as prompt variants of
+    // one exercise, like arcsin-or-arccos. Strict positivity always gives
+    // (-inf,lo) u (hi,inf), open at both ends, regardless of which root is
+    // labeled the numerator vs denominator (unlike sqrt-of-linear-ratio).
+    id: "strict-of-linear-ratio",
+    generate: () => {
+      const { lo, hi } = randTwoRoots();
+      const aIsLo = Math.random() < 0.5;
+      const a = aIsLo ? lo : hi;
+      const b = aIsLo ? hi : lo;
+      const ratio = `\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}`;
+      return {
+        prompt: pick([`f(x) = \\frac{1}{\\sqrt{${ratio}}}`, `f(x) = \\ln\\left(${ratio}\\right)`]),
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
+          { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+        ],
+      };
+    },
+  },
+  {
     // 1/(x²+Bx+C) with the denominator always shown expanded, never
     // factored — the student has to find the roots (if any) themselves.
     // Which shape it is depends on which case gets rolled:
