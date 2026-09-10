@@ -503,7 +503,7 @@ const EXERCISES = [
     id: "arcsin-or-arccos-of-abs",
     generate: () => {
       const fn = pick(["\\arcsin", "\\arccos"]);
-      const twoIntervals = Math.random() < 0.7;
+      const twoIntervals = Math.random() < 0.5;
       const a = twoIntervals ? randInt(2, 9) : pick([0, 1]);
       const arg = a === 0 ? "|x|" : `|x|-${a}`;
       const prompt = `f(x) = ${fn}\\left(${arg}\\right)`;
