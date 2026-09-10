@@ -545,6 +545,58 @@ const EXERCISES = [
       };
     },
   },
+  {
+    // sqrt(x^2+Bx+C) / ln(x-a): the first "combine two independent domain
+    // conditions" exercise — needs x^2+Bx+C >= 0 (sqrt) AND x-a > 0 and
+    // != 1 (ln, and it's a denominator). Always uses the two-distinct-root
+    // case for the quadratic (lo < hi) so the composition is never trivial.
+    //
+    // Built solution-first: lo, hi, and a are chosen directly so their
+    // relative position determines the final shape, then b, c are derived
+    // from lo, hi — going the other way (random b,c,a first, then working
+    // out the intersection) would make the resulting shape unpredictable.
+    //   45% a > hi:            ln's own bound is strictly tighter than hi,
+    //                          so the quadratic's shape becomes irrelevant:
+    //                          (a, inf), minus {a+1}
+    //   40% a = hi - 1:        forced by integers — a+1 then lands EXACTLY
+    //                          on the closed boundary hi, punching it open:
+    //                          (hi, inf), no separate excluded point
+    //   15% lo+1 <= a <= hi-2: both a and a+1 already sit inside the
+    //                          quadratic's own excluded gap (lo,hi) — both
+    //                          ln conditions are entirely redundant, domain
+    //                          is just [hi, inf), same as sqrt alone
+    id: "sqrt-quadratic-over-ln-linear",
+    generate: () => {
+      const roll = Math.random();
+      let lo, hi, a, correct;
+      if (roll < 0.45) {
+        ({ lo, hi } = randTwoRoots());
+        a = hi + randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" },
+          { type: "point", pointVal: String(a + 1) },
+        ];
+      } else if (roll < 0.85) {
+        const gap = randInt(2, 9);
+        lo = randInt(-9, 9 - gap);
+        hi = lo + gap;
+        a = hi - 1;
+        correct = [{ type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" }];
+      } else {
+        const gap = randInt(3, 9);
+        lo = randInt(-9, 9 - gap);
+        hi = lo + gap;
+        a = randInt(lo + 1, hi - 2);
+        correct = [{ type: "interval", leftClosed: true, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" }];
+      }
+      const b = -(lo + hi);
+      const c = lo * hi;
+      return {
+        prompt: `f(x) = \\frac{\\sqrt{${quadraticLatex(b, c)}}}{\\ln\\left(${linearLatex(1, -a)}\\right)}`,
+        correct,
+      };
+    },
+  },
 ];
 
 function instantiateExercise(def) {
