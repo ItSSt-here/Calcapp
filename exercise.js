@@ -454,6 +454,32 @@ const EXERCISES = [
     }),
   },
   {
+    // arcsin(1/x) or arccos(1/x): need 1/x in [-1,1] (x!=0 comes along for
+    // free). Solving separately for x>0 and x<0 — 1/x<=1 is the binding
+    // constraint when x>0 (giving x>=1), 1/x>=-1 is the binding constraint
+    // when x<0 (giving x<=-1) — gives a clean two-ray domain.
+    id: "arcsin-or-arccos-of-reciprocal",
+    generate: () => ({
+      prompt: pick(["f(x) = \\arcsin\\left(\\frac{1}{x}\\right)", "f(x) = \\arccos\\left(\\frac{1}{x}\\right)"]),
+      correct: [
+        { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "-1" },
+        { type: "interval", leftClosed: true, leftVal: "1", rightClosed: false, rightVal: "\\infty" },
+      ],
+    }),
+  },
+  {
+    // arctan(1/x): arctan is defined for every real input, so the only
+    // real constraint comes from 1/x itself needing x!=0 — the outer
+    // arctan adds nothing, same "don't overthink it" flavor as
+    // sqrt(arccos(x)).
+    id: "arctan-of-reciprocal",
+    prompt: "f(x) = \\arctan\\left(\\frac{1}{x}\\right)",
+    correct: [
+      { ...ALL_REALS },
+      { type: "point", pointVal: "0" },
+    ],
+  },
+  {
     // x/|x| and |x|/x share the same domain R\{0} — one exercise, prompt
     // picked at random each time.
     id: "x-over-abs-x",
