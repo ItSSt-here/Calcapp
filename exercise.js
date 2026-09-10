@@ -405,6 +405,15 @@ const EXERCISES = [
     ],
   },
   {
+    // ln(arctan(x)): arctan is defined everywhere, so the only condition
+    // is positivity — arctan(x)>0 <=> x>0 (arctan is increasing, arctan(0)=0).
+    id: "ln-of-arctan",
+    prompt: "f(x) = \\ln\\left(\\arctan(x)\\right)",
+    correct: [
+      { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
+    ],
+  },
+  {
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
