@@ -124,16 +124,30 @@ const EXERCISES = [
     },
   },
   {
-    // x²-a > 0  <=>  |x| > √a — the boundary depends on the rolled a, so the
-    // correct answer is computed fresh alongside the prompt each time.
-    id: "ln-x2-minus-a",
+    // x²-a > 0 <=> |x| > √a, and |x|-a > 0 <=> |x| > a directly — the same
+    // "outside two symmetric rays" shape, reached by different algebra (the
+    // x² form needs a square root to isolate the boundary, the |x| form
+    // gives it straight away as a clean integer). Merged as two prompt
+    // variants of one exercise, each keeping its own boundary formula and
+    // parameter range rather than forcing a shared a.
+    id: "ln-x2-or-abs-minus-a",
     generate: () => {
-      const a = randInt(1, 10);
+      if (Math.random() < 0.5) {
+        const a = randInt(1, 10);
+        return {
+          prompt: `f(x) = \\ln\\left(x^2-${a}\\right)`,
+          correct: [
+            { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: `-\\sqrt{${a}}` },
+            { type: "interval", leftClosed: false, leftVal: `\\sqrt{${a}}`, rightClosed: false, rightVal: "\\infty" },
+          ],
+        };
+      }
+      const a = randInt(1, 9);
       return {
-        prompt: `f(x) = \\ln\\left(x^2-${a}\\right)`,
+        prompt: `f(x) = \\ln\\left(|x|-${a}\\right)`,
         correct: [
-          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: `-\\sqrt{${a}}` },
-          { type: "interval", leftClosed: false, leftVal: `\\sqrt{${a}}`, rightClosed: false, rightVal: "\\infty" },
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(-a) },
+          { type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" },
         ],
       };
     },
