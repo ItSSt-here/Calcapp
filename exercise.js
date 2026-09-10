@@ -538,6 +538,101 @@ const EXERCISES = [
     },
   },
   {
+    // sqrt((x-n1)(x-n2)/(x-c)): a quadratic numerator (roots n1<n2) over a
+    // linear denominator (root c) — a real 4-region sign chart instead of
+    // just one flip. For large x this behaves like x (degree 2 - degree 1
+    // = 1, odd), so the sign is always POSITIVE in the rightmost region and
+    // alternates leftward from there, regardless of where c falls — which
+    // gives exactly 3 clean cases depending on c's position relative to
+    // n1, n2 (built solution-first: the case and critical points are
+    // chosen first, then b, c of the quadratic are derived from n1, n2):
+    //   c < n1:      (c, n1] u [n2, inf)
+    //   n1 < c < n2: [n1, c) u [n2, inf)
+    //   c > n2:      [n1, n2] u (c, inf)  -- a closed bounded interval
+    //                plus an open ray
+    id: "sqrt-quadratic-over-linear-ratio",
+    generate: () => {
+      const roll = Math.random();
+      let n1, n2, c, correct;
+      if (roll < 1 / 3) {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        c = n1 - randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(c), rightClosed: true, rightVal: String(n1) },
+          { type: "interval", leftClosed: true, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 2 / 3) {
+        const gap = randInt(2, 9);
+        n1 = randInt(-9, 9 - gap);
+        n2 = n1 + gap;
+        c = randInt(n1 + 1, n2 - 1);
+        correct = [
+          { type: "interval", leftClosed: true, leftVal: String(n1), rightClosed: false, rightVal: String(c) },
+          { type: "interval", leftClosed: true, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        c = n2 + randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: true, leftVal: String(n1), rightClosed: true, rightVal: String(n2) },
+          { type: "interval", leftClosed: false, leftVal: String(c), rightClosed: false, rightVal: "\\infty" },
+        ];
+      }
+      const qb = -(n1 + n2);
+      const qc = n1 * n2;
+      return {
+        prompt: `f(x) = \\sqrt{\\frac{${quadraticLatex(qb, qc)}}{${linearLatex(1, -c)}}}`,
+        correct,
+      };
+    },
+  },
+  {
+    // sqrt((x-a)/((x-n1)(x-n2))): the mirror of the exercise above — a
+    // linear numerator (root a) over a quadratic denominator (roots
+    // n1<n2, both always excluded). Same alternating-sign logic (this
+    // time behaving like 1/x for large x, still positive at the rightmost
+    // region), giving 3 cases by where a falls:
+    //   a < n1:      [a, n1) u (n2, inf)
+    //   n1 < a < n2: (n1, a] u (n2, inf)
+    //   a > n2:      (n1, n2) u [a, inf)  -- an open bounded interval
+    //                plus a closed ray
+    id: "sqrt-linear-over-quadratic-ratio",
+    generate: () => {
+      const roll = Math.random();
+      let n1, n2, a, correct;
+      if (roll < 1 / 3) {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        a = n1 - randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: true, leftVal: String(a), rightClosed: false, rightVal: String(n1) },
+          { type: "interval", leftClosed: false, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 2 / 3) {
+        const gap = randInt(2, 9);
+        n1 = randInt(-9, 9 - gap);
+        n2 = n1 + gap;
+        a = randInt(n1 + 1, n2 - 1);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(n1), rightClosed: true, rightVal: String(a) },
+          { type: "interval", leftClosed: false, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        a = n2 + randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(n1), rightClosed: false, rightVal: String(n2) },
+          { type: "interval", leftClosed: true, leftVal: String(a), rightClosed: false, rightVal: "\\infty" },
+        ];
+      }
+      const qb = -(n1 + n2);
+      const qc = n1 * n2;
+      return {
+        prompt: `f(x) = \\sqrt{\\frac{${linearLatex(1, -a)}}{${quadraticLatex(qb, qc)}}}`,
+        correct,
+      };
+    },
+  },
+  {
     // 1/(x²+Bx+C) with the denominator always shown expanded, never
     // factored — the student has to find the roots (if any) themselves.
     // Which shape it is depends on which case gets rolled:
