@@ -815,6 +815,53 @@ const EXERCISES = [
     },
   },
   {
+    // x²-a >= 0 <=> |x| >= √a, and |x|-a >= 0 <=> |x| >= a directly — the
+    // closed-boundary mirror of ln-x2-or-abs-minus-a (sqrt(0) is fine, so
+    // both boundaries are included here instead of excluded).
+    id: "sqrt-x2-or-abs-minus-a",
+    generate: () => {
+      if (Math.random() < 0.5) {
+        const a = randInt(1, 10);
+        return {
+          prompt: `f(x) = \\sqrt{x^2-${a}}`,
+          correct: [
+            { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: `-\\sqrt{${a}}` },
+            { type: "interval", leftClosed: true, leftVal: `\\sqrt{${a}}`, rightClosed: false, rightVal: "\\infty" },
+          ],
+        };
+      }
+      const a = randInt(1, 9);
+      return {
+        prompt: `f(x) = \\sqrt{|x|-${a}}`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(-a) },
+          { type: "interval", leftClosed: true, leftVal: String(a), rightClosed: false, rightVal: "\\infty" },
+        ],
+      };
+    },
+  },
+  {
+    // a-|x| > 0 <=> |x| < a (ln, needs strictly positive) and a-|x| >= 0
+    // <=> |x| <= a (sqrt, zero is fine) — the same bounded "inside" domain
+    // centered on 0, just open for ln vs closed for sqrt. The inside
+    // mirror of the outside-rays pair above, and the same
+    // open-for-ln/closed-for-sqrt pairing sum-bounded-interval uses.
+    id: "ln-or-sqrt-of-a-minus-abs",
+    generate: () => {
+      const a = randInt(1, 9);
+      if (Math.random() < 0.5) {
+        return {
+          prompt: `f(x) = \\ln\\left(${a}-|x|\\right)`,
+          correct: [{ type: "interval", leftClosed: false, leftVal: String(-a), rightClosed: false, rightVal: String(a) }],
+        };
+      }
+      return {
+        prompt: `f(x) = \\sqrt{${a}-|x|}`,
+        correct: [{ type: "interval", leftClosed: true, leftVal: String(-a), rightClosed: true, rightVal: String(a) }],
+      };
+    },
+  },
+  {
     // 1/sqrt(ax+b): same root as sqrt-linear, but now strict since x=root
     // itself would make the denominator 0.
     id: "one-over-sqrt-linear",
