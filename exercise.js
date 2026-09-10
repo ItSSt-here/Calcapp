@@ -44,6 +44,16 @@ function negQuadraticLatex(b, c) {
   return `-x^2${signedTerm(-b, "x")}${signedTerm(-c, "")}`;
 }
 
+// "v +- sqrt(n)" as LaTeX (sign = -1 or +1) — collapses to a plain integer
+// when n is a perfect square, and drops the leading "v" when it's 0.
+function offsetRadical(v, sign, n) {
+  const r = Math.sqrt(n);
+  if (Number.isInteger(r)) return String(v + sign * r);
+  const radical = `\\sqrt{${n}}`;
+  if (v === 0) return sign < 0 ? `-${radical}` : radical;
+  return sign < 0 ? `${v}-${radical}` : `${v}+${radical}`;
+}
+
 // "Ax + B", A guaranteed nonzero so it's always a genuine linear term.
 function linearLatex(a, b) {
   const abs = Math.abs(a);
@@ -631,6 +641,49 @@ const EXERCISES = [
       const c = lo * hi;
       return {
         prompt: `f(x) = \\frac{\\sqrt{${quadraticLatex(b, c)}}}{\\ln\\left(${linearLatex(1, -a)}\\right)}`,
+        correct,
+      };
+    },
+  },
+  {
+    // arccos(x^2+bx+c) or arcsin(x^2+bx+c): both share the exact same
+    // domain requirement, -1 <= q(x) <= 1, since arcsin and arccos have
+    // the same domain [-1,1] (only their values differ) — so the prompt
+    // is picked at random just like the plain arcsin-or-arccos exercise.
+    //
+    // Writing q in vertex form q(x)=(x-v)^2+m (v=vertex x, m=minimum
+    // value), both q=1 and q=-1 are symmetric around the SAME center v
+    // (only c shifts between them, not b), giving two regimes on m:
+    //   -1<=m<=1: q>=-1 holds everywhere -> a single bounded closed
+    //             interval [v-w1, v+w1], same shape as sqrt-neg-quadratic
+    //   m<-1:     q=-1's roots v+-w2 sit STRICTLY INSIDE q=1's roots
+    //             v+-w1 (w2<w1) -> TWO disjoint bounded closed intervals
+    //             [v-w1,v-w2] u [v+w2,v+w1] — a shape that doesn't exist
+    //             anywhere else in the bank
+    // Built solution-first: v and m are chosen directly, then b=-2v,
+    // c=v^2+m come out as clean integers, and the boundaries are
+    // v +- sqrt(1-m), v +- sqrt(-1-m).
+    //   80% m in [-9,-2]: two disjoint intervals (the interesting case)
+    //   20% m in {-1,0}:  single interval (m=1 would collapse to a
+    //       single point, so it's excluded as degenerate)
+    id: "arccos-or-arcsin-of-quadratic",
+    generate: () => {
+      const fn = pick(["\\arccos", "\\arcsin"]);
+      const v = randInt(-9, 9);
+      const m = Math.random() < 0.80 ? randInt(-9, -2) : pick([-1, 0]);
+      const b = -2 * v;
+      const c = v * v + m;
+      let correct;
+      if (m < -1) {
+        correct = [
+          { type: "interval", leftClosed: true, leftVal: offsetRadical(v, -1, 1 - m), rightClosed: true, rightVal: offsetRadical(v, -1, -1 - m) },
+          { type: "interval", leftClosed: true, leftVal: offsetRadical(v, 1, -1 - m), rightClosed: true, rightVal: offsetRadical(v, 1, 1 - m) },
+        ];
+      } else {
+        correct = [{ type: "interval", leftClosed: true, leftVal: offsetRadical(v, -1, 1 - m), rightClosed: true, rightVal: offsetRadical(v, 1, 1 - m) }];
+      }
+      return {
+        prompt: `f(x) = ${fn}\\left(${quadraticLatex(b, c)}\\right)`,
         correct,
       };
     },
