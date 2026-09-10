@@ -468,6 +468,27 @@ const EXERCISES = [
     }),
   },
   {
+    // arcsin(ax+b) or arccos(ax+b): need -1 <= ax+b <= 1. Solving gives a
+    // closed interval centered on v (where ax+b=0) with half-width 1/|a| —
+    // regardless of a's sign, since the two boundary x-values always sort
+    // to [v-1/|a|, v+1/|a|]. |a| in {1,2} keeps the half-width a clean 1
+    // or 0.5.
+    id: "arcsin-or-arccos-of-linear",
+    generate: () => {
+      const fn = pick(["\\arcsin", "\\arccos"]);
+      const a = pick([-2, -1, 1, 2]);
+      const v = randInt(-9, 9);
+      const b = -a * v;
+      const w = 1 / Math.abs(a);
+      return {
+        prompt: `f(x) = ${fn}\\left(${linearLatex(a, b)}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: true, leftVal: String(v - w), rightClosed: true, rightVal: String(v + w) },
+        ],
+      };
+    },
+  },
+  {
     // arctan(1/x): arctan is defined for every real input, so the only
     // real constraint comes from 1/x itself needing x!=0 — the outer
     // arctan adds nothing, same "don't overthink it" flavor as
@@ -639,6 +660,10 @@ const EXERCISES = [
     //   70% two distinct roots a≠b:   (x-a)(x-b), excludes {a,b}
     //   15% one repeated root:        (x-a)²,      excludes {a}
     //   15% no real root:             (x-a)²+b>0,  excludes nothing (R)
+    // Also shown, at random, as 1/cbrt(x^2+Bx+C) — a cube root only needs
+    // its argument nonzero (never negative-averse like a square root), so
+    // the domain condition is exactly the same x^2+Bx+C != 0, just reached
+    // by different reasoning.
     id: "one-over-quadratic",
     generate: () => {
       const roll = Math.random();
@@ -665,7 +690,10 @@ const EXERCISES = [
         correct = [{ ...ALL_REALS }];
       }
       return {
-        prompt: `f(x) = \\frac{1}{${quadraticLatex(b, c)}}`,
+        prompt: pick([
+          `f(x) = \\frac{1}{${quadraticLatex(b, c)}}`,
+          `f(x) = \\frac{1}{\\sqrt[3]{${quadraticLatex(b, c)}}}`,
+        ]),
         correct,
       };
     },
