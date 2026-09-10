@@ -489,6 +489,38 @@ const EXERCISES = [
     },
   },
   {
+    // arcsin(|x|-a) or arccos(|x|-a): both need -1 <= |x|-a <= 1, i.e.
+    // a-1 <= |x| <= a+1. Since |x| is never negative, the lower bound only
+    // bites once a>1 — below that it's automatically satisfied and the
+    // domain is one interval centered on 0:
+    //   a<=1 (a-1<=0): |x|<=a+1     -> single interval [-(a+1), a+1]
+    //   a>1  (a-1>0):  a-1<=|x|<=a+1 -> two disjoint intervals
+    //                  [-(a+1),-(a-1)] u [(a-1),(a+1)]
+    // a<0 is skipped: a<-1 makes the domain empty (this builder has no way
+    // to answer "no x works"), and a=-1 collapses to the lone point {0} —
+    // a domain shape it can't represent either (its point rows mean
+    // "excluded", not "the only value allowed").
+    id: "arcsin-or-arccos-of-abs",
+    generate: () => {
+      const fn = pick(["\\arcsin", "\\arccos"]);
+      const twoIntervals = Math.random() < 0.7;
+      const a = twoIntervals ? randInt(2, 9) : pick([0, 1]);
+      const arg = a === 0 ? "|x|" : `|x|-${a}`;
+      const prompt = `f(x) = ${fn}\\left(${arg}\\right)`;
+      return {
+        prompt,
+        correct: twoIntervals
+          ? [
+              { type: "interval", leftClosed: true, leftVal: String(-(a + 1)), rightClosed: true, rightVal: String(-(a - 1)) },
+              { type: "interval", leftClosed: true, leftVal: String(a - 1), rightClosed: true, rightVal: String(a + 1) },
+            ]
+          : [
+              { type: "interval", leftClosed: true, leftVal: String(-(a + 1)), rightClosed: true, rightVal: String(a + 1) },
+            ],
+      };
+    },
+  },
+  {
     // arctan(1/x): arctan is defined for every real input, so the only
     // real constraint comes from 1/x itself needing x!=0 — the outer
     // arctan adds nothing, same "don't overthink it" flavor as
