@@ -35,6 +35,87 @@
 
 .difficulty-btn.active:hover { filter: brightness(0.9); }
 
+/* Four states for the "Your answer" card border: a soft teal tint while
+   working (the page's own accent, not blue — this page deliberately moved
+   away from blue/indigo earlier), amber while viewing the solution (the
+   same color the "Show solution" button itself already uses), and a
+   thicker, bolder green/red once actually graded. Border-width is fixed
+   at 2px for every state so switching between them never shifts layout. */
+.answer-card {
+  position: relative;
+  border-width: 2px;
+  border-color: var(--accent-tint-border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.answer-card.solution {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 3px rgba(201, 138, 63, 0.12);
+}
+
+.answer-card.correct {
+  border-color: var(--good);
+  box-shadow: 0 0 0 4px rgba(79, 157, 105, 0.18);
+}
+
+.answer-card.incorrect {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+  animation: answer-shake 0.4s ease;
+}
+
+@keyframes answer-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.answer-badge {
+  position: absolute;
+  top: -15px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 2px 6px rgba(20, 22, 30, 0.2);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.answer-badge.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.answer-badge.correct { background: var(--good); }
+.answer-badge.incorrect { background: var(--bad); }
+
+/* Small "Correct"/"Incorrect" label tucked in the bottom-right corner —
+   absolutely positioned so it can never stretch the card. */
+.answer-status-text {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.answer-status-text.show { opacity: 1; }
+.answer-status-text.correct { color: var(--good); }
+.answer-status-text.incorrect { color: var(--bad); }
+
 .problem-card {
   text-align: center;
   padding: 24px 20px;
@@ -195,16 +276,6 @@ button#nextBtn:hover {
   font-weight: 500;
   white-space: pre-line;
   line-height: 1.5;
-}
-
-.feedback.correct {
-  background: #eaf5ee;
-  color: var(--good);
-}
-
-.feedback.incorrect {
-  background: #fef2f2;
-  color: var(--bad);
 }
 
 .feedback.info {
