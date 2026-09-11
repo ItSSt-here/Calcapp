@@ -535,6 +535,24 @@ const EXERCISES = [
     },
   },
   {
+    // arcsin(sqrt(x)/a) or arccos(sqrt(x)/a): needs sqrt(x) defined (x>=0)
+    // AND sqrt(x)/a in [-1,1]. Since sqrt(x)>=0 and a>0, the ratio is
+    // already >=0, so only the upper bound bites: sqrt(x)/a<=1 <=> x<=a^2
+    // (squaring is safe, both sides non-negative) — always a single closed
+    // interval [0, a^2], no case split.
+    id: "arcsin-or-arccos-of-sqrt-over-a",
+    generate: () => {
+      const fn = pick(["\\arcsin", "\\arccos"]);
+      const a = randInt(2, 9);
+      return {
+        prompt: `f(x) = ${fn}\\left(\\frac{\\sqrt{x}}{${a}}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: true, leftVal: "0", rightClosed: true, rightVal: String(a * a) },
+        ],
+      };
+    },
+  },
+  {
     // arctan(1/x): arctan is defined for every real input, so the only
     // real constraint comes from 1/x itself needing x!=0 — the outer
     // arctan adds nothing, same "don't overthink it" flavor as
