@@ -693,6 +693,31 @@ const EXERCISES = [
     },
   },
   {
+    // arcsin(sqrt(x^2-a)) or arccos(sqrt(x^2-a)): sqrt needs x^2-a>=0, and
+    // since sqrt(...) is always >=0, arcsin/arccos's own lower bound (>=-1)
+    // is automatic — only sqrt(x^2-a)<=1 is a real extra constraint.
+    // Squaring (safe, both sides non-negative) collapses the whole thing to
+    // one compound inequality: a <= x^2 <= a+1. a is kept to 1..9 so the
+    // lower bound always bites too, giving sqrt(a)<=|x|<=sqrt(a+1) every
+    // time — two disjoint closed intervals with irrational boundaries, no
+    // branching needed (a<=-1 would make the domain empty or a single
+    // point, neither representable by this builder, and a=0 would just
+    // reproduce arcsin-or-arccos-of-abs's own a=0 case, [-1,1]).
+    id: "arcsin-or-arccos-of-sqrt-quadratic",
+    difficulty: 4,
+    generate: () => {
+      const fn = pick(["\\arcsin", "\\arccos"]);
+      const a = randInt(1, 9);
+      return {
+        prompt: `f(x) = ${fn}\\left(\\sqrt{x^2-${a}}\\right)`,
+        correct: [
+          { type: "interval", leftClosed: true, leftVal: `-\\sqrt{${a + 1}}`, rightClosed: true, rightVal: `-\\sqrt{${a}}` },
+          { type: "interval", leftClosed: true, leftVal: `\\sqrt{${a}}`, rightClosed: true, rightVal: `\\sqrt{${a + 1}}` },
+        ],
+      };
+    },
+  },
+  {
     // sqrt((x-n1)(x-n2)/(x-c)): a quadratic numerator (roots n1<n2) over a
     // linear denominator (root c) — a real 4-region sign chart instead of
     // just one flip. For large x this behaves like x (degree 2 - degree 1
