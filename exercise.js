@@ -1570,6 +1570,71 @@ const EXERCISES = [
     },
   },
   */
+
+  // --- Piecewise ("split") functions -----------------------------------
+  // A genuinely different mechanic from everything above: each piece comes
+  // with its OWN assigned x-interval, and a piece only contributes to the
+  // overall domain where its formula is actually defined WITHIN that
+  // assigned interval — the assigned interval and the formula's own domain
+  // requirement have to be intersected, piece by piece, then the results
+  // unioned. The final answer is still a plain union of intervals/points
+  // (no change needed to the domain builder or equivalence checker), but
+  // the reasoning is new: a piece can contribute its entire assigned
+  // interval untouched (if its formula is always defined there), only part
+  // of it (carving a gap out of the function's overall domain), or nothing
+  // at all (if its formula is undefined everywhere in that interval).
+  // difficulty/estimatedMinutes are intentionally left unset (null) for
+  // now — pending a decision on whether piecewise exercises get their own
+  // tier or slot into the existing L1-4 scale.
+  {
+    // f(x) = { x^2+1, x<=a ; sqrt(x-b), x>a }: the x^2+1 piece is always
+    // defined, so it always contributes its whole assigned interval
+    // (-inf,a]. The sqrt piece needs x>=b, intersected with x>a:
+    //   b<=a: sqrt's own bound is already looser than a, so its entire
+    //         assigned interval (a,inf) survives untouched -> combined
+    //         with (-inf,a] gives everything, domain = R
+    //   b>a:  only [b,inf) of the assigned interval (a,inf) survives ->
+    //         combined with (-inf,a] leaves a genuine gap (a,b) excluded
+    id: "piecewise-poly-sqrt",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      const gapCase = Math.random() < 0.5;
+      const b = gapCase ? a + randInt(1, 5) : a - randInt(0, 5);
+      return {
+        prompt: `f(x) = \\begin{cases} x^2+1 & x \\le ${a} \\\\ \\sqrt{${linearLatex(1, -b)}} & x > ${a} \\end{cases}`,
+        correct: gapCase
+          ? [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(a) },
+              { type: "interval", leftClosed: true, leftVal: String(b), rightClosed: false, rightVal: "\\infty" },
+            ]
+          : [{ ...ALL_REALS }],
+      };
+    },
+  },
+  {
+    // f(x) = { ln(x), x<=a ; x^2, x>a }: the x^2 piece is always defined,
+    // contributing its whole assigned interval (a,inf) every time. The
+    // ln(x) piece needs x>0, intersected with x<=a:
+    //   a<=0: (-inf,a] is entirely <=0, so ln(x) is undefined throughout
+    //         this piece's ENTIRE assigned interval — it contributes
+    //         nothing at all, domain = (a,inf), just the other piece
+    //   a>0:  ln(x) piece contributes (0,a], which meets the x^2 piece's
+    //         (a,inf) exactly at a -> they join into one clean ray (0,inf)
+    id: "piecewise-ln-poly",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      return {
+        prompt: `f(x) = \\begin{cases} \\ln(x) & x \\le ${a} \\\\ x^2 & x > ${a} \\end{cases}`,
+        correct: a <= 0
+          ? [{ type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" }]
+          : [{ type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" }],
+      };
+    },
+  },
 ];
 
 function instantiateExercise(def) {
