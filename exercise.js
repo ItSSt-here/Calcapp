@@ -94,6 +94,36 @@ function randCoprimeFraction() {
   return { a, b };
 }
 
+// Difficulty levels (1-4), recorded on every entry below via the
+// `difficulty` field. Classified by the reasoning actually required to
+// solve the problem, not by how long its generate() code is:
+//   1 - recall a single elementary domain rule directly (ln needs x>0,
+//       sqrt needs x>=0, arcsin/arccos need [-1,1], sin/cos/e^x/arctan are
+//       unrestricted, ...) — no algebra, no case-split.
+//   2 - one real algebraic step (solve a linear inequality, take a square
+//       root of both sides, check the parity of an already-reduced
+//       fraction, ...) but still exactly one deterministic answer shape —
+//       no case-splitting into qualitatively different outcomes, and no
+//       composing two NAMED functions (ln, sqrt, arcsin, arccos, arctan,
+//       sin, cos) where one's domain has to be checked against another's
+//       argument/range requirement. (A composition still counts as L2 if
+//       the outer function is unrestricted and adds no real combining
+//       step, e.g. arctan(1/x) or ln(arctan(x)).)
+//   3 - either (a) composing two named functions where you must combine
+//       "the inner must be defined" with "the outer's argument/range
+//       requirement" (often requiring a range fact, like recognizing
+//       arccos's range is always >=0), or (b) a single expression
+//       (quadratic, |x|, ...) that splits into 2-3 qualitatively
+//       different shapes depending on a parameter (discriminant-style
+//       reasoning).
+//   4 - a genuine rational sign-chart (quotient of two polynomials or
+//       linear/quadratic factors, with multi-region reasoning), or a
+//       composition of two named functions stacked WITH case-splitting at
+//       the same time.
+// When adding a new exercise, classify it against this rubric and set its
+// `difficulty` field accordingly — instantiateExercise() carries the field
+// through onto the live exercise object for later use (e.g. a difficulty
+// picker/filter).
 const EXERCISES = [
   {
     id: "ln-x",
