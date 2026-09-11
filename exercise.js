@@ -1871,6 +1871,26 @@ const solutionBtn = document.getElementById("solutionBtn");
 const nextBtn = document.getElementById("nextBtn");
 const confirmYesBtn = document.getElementById("confirmYesBtn");
 const confirmBackBtn = document.getElementById("confirmBackBtn");
+const answerCardEl = document.getElementById("answerCard");
+const answerBadgeEl = document.getElementById("answerBadge");
+
+// Marks the "Your answer" card itself as correct/incorrect (border glow +
+// a ✓/✗ badge), or clears it back to neutral. Called fresh on every grade,
+// never left stale — editing the answer at all resets it to neutral (see
+// the builder's onChange below), so a second wrong attempt always starts
+// from neutral and gets its own clear signal, not a rehash of the first.
+function setAnswerState(state) {
+  answerCardEl.classList.remove("correct", "incorrect");
+  answerBadgeEl.classList.remove("show", "correct", "incorrect");
+  answerBadgeEl.textContent = "";
+  if (!state) return;
+  // Force a reflow so the shake animation restarts even if "incorrect" is
+  // set twice in a row (e.g. clicking Check again with no edits in between).
+  void answerCardEl.offsetWidth;
+  answerCardEl.classList.add(state);
+  answerBadgeEl.classList.add("show", state);
+  answerBadgeEl.textContent = state === "correct" ? "✓" : "✗";
+}
 
 const builder = createDomainBuilder({
   segmentsEl: document.getElementById("segments"),
@@ -1880,6 +1900,7 @@ const builder = createDomainBuilder({
   initialSegments: [
     { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
   ],
+  onChange: () => setAnswerState(null),
 });
 
 document.getElementById("addIntervalBtn").addEventListener("click", () => builder.addInterval());
@@ -1962,6 +1983,7 @@ function loadExercise(exercise) {
   solutionLabelEl.classList.add("hidden");
   confirmOverlayEl.classList.add("hidden");
   pendingRealsGuess = null;
+  setAnswerState(null);
 
   checkBtn.disabled = false;
   solutionBtn.classList.remove("hidden");
@@ -1980,10 +2002,12 @@ function gradeSegments(segments) {
   if (domainsEqual(segments, currentExercise.correct)) {
     feedbackEl.className = "feedback correct";
     feedbackEl.textContent = "✓ Correct!";
+    setAnswerState("correct");
     resolveExercise();
   } else {
     feedbackEl.className = "feedback incorrect";
     feedbackEl.textContent = "✗ Not quite — try again.";
+    setAnswerState("incorrect");
   }
 }
 
@@ -2037,6 +2061,7 @@ solutionBtn.addEventListener("click", () => {
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
   confirmOverlayEl.classList.add("hidden");
+  setAnswerState(null);
 
   // Replace the student's own preview/number-line — not their input rows —
   // with the correct answer's, right where their own would normally render.
