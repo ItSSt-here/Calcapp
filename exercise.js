@@ -1873,23 +1873,35 @@ const confirmYesBtn = document.getElementById("confirmYesBtn");
 const confirmBackBtn = document.getElementById("confirmBackBtn");
 const answerCardEl = document.getElementById("answerCard");
 const answerBadgeEl = document.getElementById("answerBadge");
+const answerStatusTextEl = document.getElementById("answerStatusText");
 
-// Marks the "Your answer" card itself as correct/incorrect (border glow +
-// a ✓/✗ badge), or clears it back to neutral. Called fresh on every grade,
-// never left stale — editing the answer at all resets it to neutral (see
-// the builder's onChange below), so a second wrong attempt always starts
-// from neutral and gets its own clear signal, not a rehash of the first.
+// Marks the "Your answer" card itself with one of four states: null
+// (neutral, while working), "solution" (viewing the correct answer),
+// or "correct"/"incorrect" (graded — border glow, a ✓/✗ badge, and a small
+// "Correct"/"Incorrect" label, all on the card itself rather than a
+// separate text banner). Called fresh on every grade, never left stale —
+// editing the answer at all resets it to neutral (see the builder's
+// onChange below), so a second wrong attempt always starts from neutral
+// and gets its own clear signal, not a rehash of the first.
 function setAnswerState(state) {
-  answerCardEl.classList.remove("correct", "incorrect");
+  answerCardEl.classList.remove("correct", "incorrect", "solution");
   answerBadgeEl.classList.remove("show", "correct", "incorrect");
   answerBadgeEl.textContent = "";
+  answerStatusTextEl.classList.remove("show", "correct", "incorrect");
+  answerStatusTextEl.textContent = "";
   if (!state) return;
+  if (state === "solution") {
+    answerCardEl.classList.add("solution");
+    return;
+  }
   // Force a reflow so the shake animation restarts even if "incorrect" is
   // set twice in a row (e.g. clicking Check again with no edits in between).
   void answerCardEl.offsetWidth;
   answerCardEl.classList.add(state);
   answerBadgeEl.classList.add("show", state);
   answerBadgeEl.textContent = state === "correct" ? "✓" : "✗";
+  answerStatusTextEl.classList.add("show", state);
+  answerStatusTextEl.textContent = state === "correct" ? "Correct" : "Incorrect";
 }
 
 const builder = createDomainBuilder({
@@ -2000,13 +2012,9 @@ function resolveExercise() {
 
 function gradeSegments(segments) {
   if (domainsEqual(segments, currentExercise.correct)) {
-    feedbackEl.className = "feedback correct";
-    feedbackEl.textContent = "✓ Correct!";
     setAnswerState("correct");
     resolveExercise();
   } else {
-    feedbackEl.className = "feedback incorrect";
-    feedbackEl.textContent = "✗ Not quite — try again.";
     setAnswerState("incorrect");
   }
 }
@@ -2021,6 +2029,7 @@ function showRealsSuggestion(pointSegments) {
   pendingRealsGuess = [{ ...ALL_REALS }, ...pointSegments];
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
+  setAnswerState(null);
   confirmOverlayEl.classList.remove("hidden");
 }
 
@@ -2061,7 +2070,7 @@ solutionBtn.addEventListener("click", () => {
   feedbackEl.className = "feedback";
   feedbackEl.textContent = "";
   confirmOverlayEl.classList.add("hidden");
-  setAnswerState(null);
+  setAnswerState("solution");
 
   // Replace the student's own preview/number-line — not their input rows —
   // with the correct answer's, right where their own would normally render.
