@@ -1860,6 +1860,7 @@ function instantiateExercise(def) {
 }
 
 const problemCardEl = document.getElementById("problemCard");
+const problemContentEl = document.getElementById("problemContent");
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
 const solutionLabelEl = document.getElementById("solutionLabel");
@@ -1997,11 +1998,16 @@ function loadExercise(exercise, { animate = false } = {}) {
 
   if (animate && problemTextEl.firstChild) {
     removeOutgoingProblemClone(); // in case a previous transition is still mid-flight
-    const rect = problemTextEl.getBoundingClientRect();
+    // Clone the whole label+formula block, not just the formula: a future
+    // exercise type may use a different instruction than this one, and the
+    // two should read as one page sliding away together, not two unrelated
+    // things moving in sync.
+    const rect = problemContentEl.getBoundingClientRect();
     const cardRect = problemCardEl.getBoundingClientRect();
-    const clone = problemTextEl.cloneNode(true);
+    const clone = problemContentEl.cloneNode(true);
     clone.removeAttribute("id");
-    clone.className = "problem-text problem-text-outgoing";
+    clone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+    clone.classList.add("problem-content-outgoing");
     clone.style.left = `${rect.left - cardRect.left}px`;
     clone.style.top = `${rect.top - cardRect.top}px`;
     clone.style.width = `${rect.width}px`;
