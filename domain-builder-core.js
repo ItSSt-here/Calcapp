@@ -13,7 +13,7 @@ import { evaluateExpr, latexToPlainText } from "./math-expr.js";
 MathfieldElement.fontsDirectory = "https://cdn.jsdelivr.net/npm/mathlive@0.110.0/fonts";
 MathfieldElement.soundsDirectory = null;
 
-const SEG_COLORS = ["#4f46e5", "#0891b2", "#b45309", "#db2777", "#16a34a", "#7c3aed"];
+const SEG_COLORS = ["#0d7d72", "#0891b2", "#b45309", "#db2777", "#16a34a", "#7c3aed"];
 
 // A boundary field holds one string that's either a plain number, a math
 // expression (e^2, sqrt(2), pi/2, ...), or infinity written as inf /

@@ -1,3 +1,40 @@
+.difficulty-filter {
+  display: flex;
+  gap: 8px;
+}
+
+/* Each level carries its own muted accent — green through orange, never
+   red (red already means "mistake" elsewhere in this UI) — set once here
+   and consumed by the generic button rules below. */
+.difficulty-btn[data-level="1"] { --diff: var(--diff-1); --diff-tint: var(--diff-1-tint); }
+.difficulty-btn[data-level="2"] { --diff: var(--diff-2); --diff-tint: var(--diff-2-tint); }
+.difficulty-btn[data-level="3"] { --diff: var(--diff-3); --diff-tint: var(--diff-3-tint); }
+.difficulty-btn[data-level="4"] { --diff: var(--diff-4); --diff-tint: var(--diff-4-tint); }
+
+.difficulty-btn {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: 1px solid var(--diff);
+  background: var(--diff-tint);
+  color: var(--diff);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, filter 0.12s ease, transform 0.05s ease;
+}
+
+.difficulty-btn:hover { filter: brightness(0.97); }
+.difficulty-btn:active { transform: translateY(1px); }
+
+.difficulty-btn.active {
+  background: var(--diff);
+  border-color: var(--diff);
+  color: white;
+}
+
+.difficulty-btn.active:hover { filter: brightness(0.9); }
+
 .problem-card {
   text-align: center;
   padding: 24px 20px;
@@ -23,12 +60,12 @@ button#checkBtn {
   background: var(--accent);
   color: white;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 2px 6px rgba(13, 125, 114, 0.35);
   transition: background 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
 }
 
-button#checkBtn:hover { background: var(--accent-hover); box-shadow: 0 3px 9px rgba(79, 70, 229, 0.4); }
-button#checkBtn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(79, 70, 229, 0.35); }
+button#checkBtn:hover { background: var(--accent-hover); box-shadow: 0 3px 9px rgba(13, 125, 114, 0.4); }
+button#checkBtn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(13, 125, 114, 0.35); }
 
 button#checkBtn:disabled {
   opacity: 0.5;
@@ -58,24 +95,24 @@ button#solutionBtn {
   background: var(--warn-bg);
   color: var(--warn);
   border: 1px solid var(--warn-border);
-  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.12);
+  box-shadow: 0 1px 2px rgba(201, 138, 63, 0.12);
 }
 
 button#solutionBtn:hover {
   background: var(--warn-bg-hover);
-  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.2);
+  box-shadow: 0 2px 6px rgba(201, 138, 63, 0.2);
 }
 
 /* Another exercise — green: the "move forward" action */
 button#nextBtn {
   background: var(--good);
   color: white;
-  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+  box-shadow: 0 2px 6px rgba(79, 157, 105, 0.35);
 }
 
 button#nextBtn:hover {
   background: var(--good-hover);
-  box-shadow: 0 3px 9px rgba(22, 163, 74, 0.4);
+  box-shadow: 0 3px 9px rgba(79, 157, 105, 0.4);
 }
 
 .confirm-overlay {
@@ -105,7 +142,7 @@ button#nextBtn:hover {
 
 .confirm-label {
   font-size: 0.95rem;
-  color: #b45309;
+  color: var(--warn);
   font-weight: 600;
   margin-bottom: 14px;
 }
@@ -131,11 +168,11 @@ button#nextBtn:hover {
   background: var(--accent);
   color: white;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 2px 6px rgba(13, 125, 114, 0.35);
   transition: background 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
 }
 
-.confirm-btn:hover { background: var(--accent-hover); box-shadow: 0 3px 9px rgba(79, 70, 229, 0.4); }
+.confirm-btn:hover { background: var(--accent-hover); box-shadow: 0 3px 9px rgba(13, 125, 114, 0.4); }
 .confirm-btn:active { transform: translateY(1px); }
 
 .confirm-btn.secondary {
@@ -146,8 +183,8 @@ button#nextBtn:hover {
 }
 
 .confirm-btn.secondary:hover {
-  background: #f3f4f6;
-  border-color: #d4d7de;
+  background: #f2efe7;
+  border-color: #ddd6c7;
   box-shadow: 0 2px 5px rgba(20, 22, 30, 0.08);
 }
 
@@ -161,8 +198,8 @@ button#nextBtn:hover {
 }
 
 .feedback.correct {
-  background: #ecfdf3;
-  color: #16a34a;
+  background: #eaf5ee;
+  color: var(--good);
 }
 
 .feedback.incorrect {
@@ -171,8 +208,8 @@ button#nextBtn:hover {
 }
 
 .feedback.info {
-  background: #fffbeb;
-  color: #b45309;
+  background: var(--warn-bg);
+  color: var(--warn);
 }
 
 .feedback .correct-answer {
