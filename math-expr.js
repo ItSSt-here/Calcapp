@@ -168,6 +168,57 @@ function toSuperscript(str) {
   return `^(${str})`;
 }
 
+// Index of the "}" matching the "{" at s[start], or -1 if unbalanced.
+function matchingBrace(s, start) {
+  let depth = 0;
+  for (let i = start; i < s.length; i++) {
+    if (s[i] === "{") depth++;
+    else if (s[i] === "}") {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+// Reads one \sqrt/\frac argument starting at index i: a full {...} group
+// (MathLive's normal form), or — since it drops the braces for a single
+// atom, e.g. "\sqrt2", "\frac12" — just the next bare character.
+function readArg(s, i) {
+  if (s[i] === "{") {
+    const close = matchingBrace(s, i);
+    if (close === -1) return { text: s.slice(i + 1), next: s.length };
+    return { text: s.slice(i + 1, close), next: close + 1 };
+  }
+  return { text: s[i] ?? "", next: i + 1 };
+}
+
+// Replaces \sqrt{...} and \frac{...}{...} with √(...) and (...)/(...),
+// recursing into each argument first so nesting (e.g. a sqrt inside a
+// frac's numerator) converts correctly at any depth.
+function convertRadicalsAndFracs(s) {
+  let out = "";
+  let i = 0;
+  while (i < s.length) {
+    if (s.startsWith("\\sqrt", i)) {
+      const arg = readArg(s, i + 5);
+      out += `√(${convertRadicalsAndFracs(arg.text)})`;
+      i = arg.next;
+      continue;
+    }
+    if (s.startsWith("\\frac", i)) {
+      const num = readArg(s, i + 5);
+      const den = readArg(s, num.next);
+      out += `(${convertRadicalsAndFracs(num.text)})/(${convertRadicalsAndFracs(den.text)})`;
+      i = den.next;
+      continue;
+    }
+    out += s[i];
+    i++;
+  }
+  return out;
+}
+
 // Best-effort LaTeX -> readable text, for display only (evaluateExpr is the
 // source of truth for correctness). Doesn't need to be a full LaTeX parser —
 // just cover what the toolbar/typing can actually produce.
@@ -180,20 +231,7 @@ export function latexToPlainText(latex) {
   s = s.replace(/\\infty/g, "∞");
   s = s.replace(/\\pi/g, "π");
 
-  for (let i = 0; i < 5; i++) {
-    const before = s;
-    s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "($1)/($2)");
-    if (s === before) break;
-  }
-  // MathLive drops the braces for a single-atom argument (e.g. "\sqrt2",
-  // "\frac12") — handle those bare forms too, after the braced ones above.
-  s = s.replace(/\\frac([^{])([^{])/g, "($1)/($2)");
-  for (let i = 0; i < 5; i++) {
-    const before = s;
-    s = s.replace(/\\sqrt\{([^{}]*)\}/g, "√($1)");
-    if (s === before) break;
-  }
-  s = s.replace(/\\sqrt([^{])/g, "√($1)");
+  s = convertRadicalsAndFracs(s);
 
   s = s.replace(/\^\{([^{}]*)\}/g, (_, e) => toSuperscript(e));
   s = s.replace(/\^([0-9])/g, (_, d) => toSuperscript(d));
