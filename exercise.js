@@ -1638,6 +1638,70 @@ const EXERCISES = [
       };
     },
   },
+  {
+    // f(x) = { 1/(x-c), x<=a ; x^2, x>a }: the x^2 piece is always defined,
+    // contributing its whole assigned interval (a,inf). The reciprocal
+    // piece needs x!=c, intersected with x<=a — but unlike the truncation
+    // gotcha above, here the question isn't "how much survives", it's
+    // "does the exclusion even apply": x=c only matters if c is actually
+    // reachable through THIS piece, i.e. if c is inside its own assigned
+    // range x<=a.
+    //   c<=a: c IS reachable through this piece -> excluded, domain=R\{c}
+    //   c>a:  c belongs to the OTHER piece's territory (x>a uses x^2, not
+    //         the reciprocal) -> the exclusion never applies, domain=R
+    id: "piecewise-reciprocal-poly",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      const reachable = Math.random() < 0.5;
+      const c = reachable ? a - randInt(0, 5) : a + randInt(1, 5);
+      return {
+        prompt: `f(x) = \\begin{cases} \\frac{1}{${linearLatex(1, -c)}} & x \\le ${a} \\\\ x^2 & x > ${a} \\end{cases}`,
+        correct: reachable
+          ? [{ ...ALL_REALS }, { type: "point", pointVal: String(c) }]
+          : [{ ...ALL_REALS }],
+      };
+    },
+  },
+  {
+    // f(x) = { arcsin(x), x<=a ; x^2, x>a }: the x^2 piece always
+    // contributes its whole assigned interval (a,inf). arcsin's own
+    // BOUNDED domain [-1,1] intersected with x<=a genuinely splits into
+    // three shapes depending on where a falls relative to that bound —
+    // not just "truncated or not", but "vanishes / truncates / stays
+    // whole", each giving a different final answer:
+    //   a<-1:      x<=a misses [-1,1] entirely -> arcsin piece vanishes,
+    //              domain = (a, inf)
+    //   -1<=a<=1:  arcsin contributes [-1,a] (a real cut, since a<1 sits
+    //              inside [-1,1]) — EXCEPT when a=1, where the cut lands
+    //              exactly on the boundary already. Either way it joins
+    //              seamlessly with (a,inf): domain = [-1, inf), the same
+    //              answer for every a in this whole range (a doesn't even
+    //              show up in the final answer — a good surprise)
+    //   a>1:       x<=a already contains all of [-1,1] untouched, but now
+    //              (a,inf) starts strictly past 1, leaving genuine gap
+    //              (1,a] uncovered: domain = [-1,1] u (a, inf)
+    id: "piecewise-arcsin-poly",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      const prompt = `f(x) = \\begin{cases} \\arcsin(x) & x \\le ${a} \\\\ x^2 & x > ${a} \\end{cases}`;
+      let correct;
+      if (a < -1) {
+        correct = [{ type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" }];
+      } else if (a <= 1) {
+        correct = [{ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: false, rightVal: "\\infty" }];
+      } else {
+        correct = [
+          { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" },
+          { type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" },
+        ];
+      }
+      return { prompt, correct };
+    },
+  },
 ];
 
 function instantiateExercise(def) {
