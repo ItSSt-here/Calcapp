@@ -492,6 +492,17 @@ const EXERCISES = [
     }),
   },
   {
+    // sin(x) and cos(x) are defined everywhere — the plain trig functions,
+    // as opposed to every other trig-flavored exercise in the bank, which
+    // only ever uses their inverses (arcsin, arccos, arctan, arccot).
+    id: "sin-or-cos",
+    difficulty: 1,
+    generate: () => ({
+      prompt: pick(["f(x) = \\sin(x)", "f(x) = \\cos(x)"]),
+      correct: [{ ...ALL_REALS }],
+    }),
+  },
+  {
     // arcsin(1/x) or arccos(1/x): need 1/x in [-1,1] (x!=0 comes along for
     // free). Solving separately for x>0 and x<0 — 1/x<=1 is the binding
     // constraint when x>0 (giving x>=1), 1/x>=-1 is the binding constraint
