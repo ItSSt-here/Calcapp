@@ -1583,9 +1583,13 @@ const EXERCISES = [
   // interval untouched (if its formula is always defined there), only part
   // of it (carving a gap out of the function's overall domain), or nothing
   // at all (if its formula is undefined everywhere in that interval).
-  // difficulty/estimatedMinutes are intentionally left unset (null) for
-  // now — pending a decision on whether piecewise exercises get their own
-  // tier or slot into the existing L1-4 scale.
+  // Slotted into the existing L1-4 scale rather than given their own tier:
+  // a piecewise exercise where only one piece needs real analysis (the
+  // other always trivially survives whole) lands at L3, the same as a
+  // single-expression case-split; one where BOTH pieces carry their own
+  // restriction — or where one piece has a bounded (not just one-sided)
+  // domain — stacks that case-split complexity and lands at L4, the same
+  // reasoning that pushes composition+case-split exercises there.
   {
     // f(x) = { x^2+1, x<=a ; sqrt(x-b), x>a }: the x^2+1 piece is always
     // defined, so it always contributes its whole assigned interval
@@ -1596,8 +1600,8 @@ const EXERCISES = [
     //   b>a:  only [b,inf) of the assigned interval (a,inf) survives ->
     //         combined with (-inf,a] leaves a genuine gap (a,b) excluded
     id: "piecewise-poly-sqrt",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 3,
+    estimatedMinutes: 2.5,
     generate: () => {
       const a = randInt(-9, 9);
       const gapCase = Math.random() < 0.5;
@@ -1623,8 +1627,8 @@ const EXERCISES = [
     //   a<0:  only (0,inf) of the assigned interval (a,inf) survives,
     //         leaving a genuine gap (a,0] excluded from the domain
     id: "piecewise-poly-ln",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 3,
+    estimatedMinutes: 2.5,
     generate: () => {
       const a = randInt(-9, 9);
       return {
@@ -1650,8 +1654,8 @@ const EXERCISES = [
     //   c>a:  c belongs to the OTHER piece's territory (x>a uses x^2, not
     //         the reciprocal) -> the exclusion never applies, domain=R
     id: "piecewise-reciprocal-poly",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 3,
+    estimatedMinutes: 2,
     generate: () => {
       const a = randInt(-9, 9);
       const reachable = Math.random() < 0.5;
@@ -1683,8 +1687,8 @@ const EXERCISES = [
     //              (a,inf) starts strictly past 1, leaving genuine gap
     //              (1,a] uncovered: domain = [-1,1] u (a, inf)
     id: "piecewise-arcsin-poly",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 4,
+    estimatedMinutes: 4,
     generate: () => {
       const a = randInt(-9, 9);
       const prompt = `f(x) = \\begin{cases} \\arcsin(x) & x \\le ${a} \\\\ x^2 & x > ${a} \\end{cases}`;
@@ -1714,8 +1718,8 @@ const EXERCISES = [
     //                  territory) -> domain = R
     //   tan(theta)>a:  reachable -> domain = R \ {tan(theta)}
     id: "piecewise-poly-arctan-angle",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 4,
+    estimatedMinutes: 3,
     generate: () => {
       const a = randInt(-9, 9);
       const { angle, tan, tanVal } = pick([
@@ -1758,8 +1762,8 @@ const EXERCISES = [
     // point {-1}, a shape this builder can't represent (its point rows
     // mean excluded, not "the only value included").
     id: "piecewise-arccos-sqrt",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 4,
+    estimatedMinutes: 4.5,
     generate: () => {
       const a = randIntExcluding(-9, 9, -1);
       const b = randInt(-9, 9);
@@ -1793,8 +1797,8 @@ const EXERCISES = [
     // (The two vanishing conditions, a<-1 and a>=k^2>=4, can never hold at
     // once, so at least one piece always survives.)
     id: "piecewise-arccos-arcsin-sqrt",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 4,
+    estimatedMinutes: 5.5,
     generate: () => {
       const a = randIntExcluding(-9, 9, -1);
       const k = randInt(2, 9);
@@ -1828,8 +1832,8 @@ const EXERCISES = [
     // whenever a>=1 (arcsin already vanishing), b is forced below a to
     // guarantee the ln piece survives.
     id: "piecewise-ln-arcsin",
-    difficulty: null,
-    estimatedMinutes: null,
+    difficulty: 4,
+    estimatedMinutes: 4.5,
     generate: () => {
       const a = randInt(-9, 9);
       const b = a >= 1 ? randInt(-9, a - 1) : randInt(-9, 9);
