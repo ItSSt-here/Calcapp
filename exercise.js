@@ -666,6 +666,33 @@ const EXERCISES = [
     },
   },
   {
+    // arcsin((x-a)/(x-b)) or arccos((x-a)/(x-b)), x!=b: needs -1 <=
+    // (x-a)/(x-b) <= 1, which is really TWO rational inequalities to sign-
+    // chart and intersect — r<=1 <=> (b-a)/(x-b)<=0, and r>=-1 <=>
+    // (x-c)/(x-b)>=0 where c=(a+b)/2 is the midpoint of a and b. Working
+    // through both (c always sits strictly between a and b) collapses to a
+    // single closed ray at the midpoint, on whichever side b falls:
+    //   b>a: (b-a)/(x-b)<=0 <=> x<b, and (x-c)/(x-b)>=0 <=> x<=c or x>b
+    //        (c<b here) -> intersecting the two gives (-inf, c]
+    //   b<a: symmetric derivation (c>b here) -> intersecting gives [c, inf)
+    id: "arcsin-or-arccos-of-linear-ratio",
+    difficulty: 4,
+    generate: () => {
+      const fn = pick(["\\arcsin", "\\arccos"]);
+      const a = randInt(-9, 9);
+      const b = randIntExcluding(-9, 9, a);
+      const m = (a + b) / 2;
+      return {
+        prompt: `f(x) = ${fn}\\left(\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}\\right)`,
+        correct: [
+          b > a
+            ? { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(m) }
+            : { type: "interval", leftClosed: true, leftVal: String(m), rightClosed: false, rightVal: "\\infty" },
+        ],
+      };
+    },
+  },
+  {
     // sqrt((x-n1)(x-n2)/(x-c)): a quadratic numerator (roots n1<n2) over a
     // linear denominator (root c) — a real 4-region sign chart instead of
     // just one flip. For large x this behaves like x (degree 2 - degree 1
