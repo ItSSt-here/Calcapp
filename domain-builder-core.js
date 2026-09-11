@@ -92,6 +92,16 @@ export function buildPreviewFragment(segments) {
   return frag;
 }
 
+// A "nice" step (1/2/5 × 10^k) for background ruler ticks, targeting
+// roughly `targetCount` of them across the given span.
+function niceTickStep(span, targetCount = 8) {
+  const rough = span / targetCount;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const step = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  return step * mag;
+}
+
 // Draws the same axis-with-intervals-and-points picture the live builder
 // uses, into any target <svg> — so a "show solution" display can render
 // the correct answer's number line without needing its own builder instance.
@@ -126,22 +136,36 @@ export function renderNumberLineSVG(segments, svgEl) {
   const x = (v) => pad + ((v - min) / (max - min)) * (width - 2 * pad);
 
   let svg = "";
-  svg += `<line x1="${pad - 8}" y1="${axisY}" x2="${width - pad + 8}" y2="${axisY}" stroke="#c7cbe0" stroke-width="2" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>`;
+  svg += `<line x1="${pad - 8}" y1="${axisY}" x2="${width - pad + 8}" y2="${axisY}" stroke="#c9c2b0" stroke-width="2" marker-end="url(#arrowEnd)" marker-start="url(#arrowStart)"/>`;
 
   svg += `<defs>
     <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-      <path d="M0,0 L8,4 L0,8 Z" fill="#c7cbe0"/>
+      <path d="M0,0 L8,4 L0,8 Z" fill="#c9c2b0"/>
     </marker>
     <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-      <path d="M8,0 L0,4 L8,8 Z" fill="#c7cbe0"/>
+      <path d="M8,0 L0,4 L8,8 Z" fill="#c9c2b0"/>
     </marker>
+    <filter id="axisDepth" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.75" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
   </defs>`;
+
+  // Faint unlabeled ruler ticks — purely a background texture, drawn before
+  // (so beneath) everything else. Skips the immediate area around 0, which
+  // gets its own bold tick below.
+  const tickStep = niceTickStep(max - min);
+  const firstTick = Math.ceil(min / tickStep) * tickStep;
+  for (let t = firstTick, guard = 0; t <= max + 1e-9 && guard < 60; t += tickStep, guard++) {
+    if (Math.abs(t) < tickStep / 1000) continue;
+    const tx = x(t);
+    svg += `<line x1="${tx}" y1="${axisY - 4}" x2="${tx}" y2="${axisY + 4}" stroke="#e4ddd0" stroke-width="1.5"/>`;
+  }
 
   // zero tick — always shown, since it's now always kept in range
   if (min <= 0 && max >= 0) {
     const zx = x(0);
-    svg += `<line x1="${zx}" y1="${axisY - 9}" x2="${zx}" y2="${axisY + 9}" stroke="#111318" stroke-width="2.5"/>`;
-    svg += `<text x="${zx}" y="${axisY + 24}" font-size="13" font-weight="700" fill="#111318" text-anchor="middle">0</text>`;
+    svg += `<line x1="${zx}" y1="${axisY - 9}" x2="${zx}" y2="${axisY + 9}" stroke="#26231f" stroke-width="2.5"/>`;
+    svg += `<text x="${zx}" y="${axisY + 24}" font-size="13" font-weight="700" fill="#26231f" text-anchor="middle">0</text>`;
   }
 
   // Draw intervals first (background layer), then excluded points on top —
@@ -161,22 +185,22 @@ export function renderNumberLineSVG(segments, svgEl) {
     const x2 = rInf ? width - pad + 8 : x(Math.min(r, max));
     if (x2 <= x1 && !lInf && !rInf) return;
 
-    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt"/>`;
+    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt" filter="url(#axisDepth)"/>`;
 
     if (!lInf) {
       const cx = x(l);
       const label = escapeHtml(latexToPlainText(s.leftVal));
       svg += s.leftClosed
-        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
-        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
+        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}" filter="url(#axisDepth)"/>`
+        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
       svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
     }
     if (!rInf) {
       const cx = x(r);
       const label = escapeHtml(latexToPlainText(s.rightVal));
       svg += s.rightClosed
-        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}"/>`
-        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3"/>`;
+        ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}" filter="url(#axisDepth)"/>`
+        : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
       svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
     }
   });
@@ -190,13 +214,13 @@ export function renderNumberLineSVG(segments, svgEl) {
     if (p === null || !Number.isFinite(p) || p < min || p > max) return;
     const cx = x(p);
     const label = escapeHtml(latexToPlainText(s.pointVal));
-    svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3"/>`;
+    svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
     svg += `<line x1="${cx - 5}" y1="${y - 5}" x2="${cx + 5}" y2="${y + 5}" stroke="${color}" stroke-width="2"/>`;
     svg += `<line x1="${cx - 5}" y1="${y + 5}" x2="${cx + 5}" y2="${y - 5}" stroke="${color}" stroke-width="2"/>`;
     svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
   });
 
-  svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#9aa0b8">x</text>`;
+  svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#a89f8c">x</text>`;
 
   svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svgEl.innerHTML = svg;
