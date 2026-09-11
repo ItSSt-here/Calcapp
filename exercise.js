@@ -1614,24 +1614,27 @@ const EXERCISES = [
     },
   },
   {
-    // f(x) = { ln(x), x<=a ; x^2, x>a }: the x^2 piece is always defined,
-    // contributing its whole assigned interval (a,inf) every time. The
-    // ln(x) piece needs x>0, intersected with x<=a:
-    //   a<=0: (-inf,a] is entirely <=0, so ln(x) is undefined throughout
-    //         this piece's ENTIRE assigned interval — it contributes
-    //         nothing at all, domain = (a,inf), just the other piece
-    //   a>0:  ln(x) piece contributes (0,a], which meets the x^2 piece's
-    //         (a,inf) exactly at a -> they join into one clean ray (0,inf)
-    id: "piecewise-ln-poly",
+    // f(x) = { x^2, x<=a ; ln(x), x>a }: the x^2 piece is always defined,
+    // contributing its whole assigned interval (-inf,a] every time. The
+    // ln(x) piece needs x>0, intersected with x>a:
+    //   a>=0: x>a already implies x>0, so ln's own restriction never bites
+    //         — the whole assigned interval survives, joining seamlessly
+    //         with (-inf,a] to give everything, domain = R
+    //   a<0:  only (0,inf) of the assigned interval (a,inf) survives,
+    //         leaving a genuine gap (a,0] excluded from the domain
+    id: "piecewise-poly-ln",
     difficulty: null,
     estimatedMinutes: null,
     generate: () => {
       const a = randInt(-9, 9);
       return {
-        prompt: `f(x) = \\begin{cases} \\ln(x) & x \\le ${a} \\\\ x^2 & x > ${a} \\end{cases}`,
-        correct: a <= 0
-          ? [{ type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" }]
-          : [{ type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" }],
+        prompt: `f(x) = \\begin{cases} x^2 & x \\le ${a} \\\\ \\ln(x) & x > ${a} \\end{cases}`,
+        correct: a >= 0
+          ? [{ ...ALL_REALS }]
+          : [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(a) },
+              { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
+            ],
       };
     },
   },
