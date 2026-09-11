@@ -674,6 +674,68 @@ const EXERCISES = [
     ],
   },
   {
+    // 1/(arcsin(x)-a), a a "nice" angle in arcsin's own range (-pi/2,pi/2):
+    // needs arcsin(x) defined (x in [-1,1]) AND arcsin(x)!=a, i.e.
+    // x!=sin(a). Unlike every other "avoid a zero" exercise, the excluded
+    // point isn't found by solving an equation — it's read off a special
+    // angle's sine value, a different kind of combining step entirely.
+    id: "one-over-arcsin-minus-angle",
+    difficulty: 4,
+    generate: () => {
+      const { angle, sin } = pick([
+        { angle: "0", sin: "0" },
+        { angle: "\\frac{\\pi}{6}", sin: "\\frac{1}{2}" },
+        { angle: "\\frac{\\pi}{4}", sin: "\\frac{\\sqrt{2}}{2}" },
+        { angle: "\\frac{\\pi}{3}", sin: "\\frac{\\sqrt{3}}{2}" },
+      ]);
+      const negative = angle !== "0" && Math.random() < 0.5;
+      const argument = angle === "0"
+        ? "\\arcsin(x)"
+        : negative
+          ? `\\arcsin(x)+${angle}`
+          : `\\arcsin(x)-${angle}`;
+      const excluded = angle === "0" ? "0" : (negative ? `-${sin}` : sin);
+      return {
+        prompt: `f(x) = \\frac{1}{${argument}}`,
+        correct: [
+          { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" },
+          { type: "point", pointVal: excluded },
+        ],
+      };
+    },
+  },
+  {
+    // 1/(arctan(x)-a), a a "nice" angle in arctan's own range (-pi/2,pi/2):
+    // arctan is defined everywhere, so the only condition is
+    // arctan(x)!=a, i.e. x!=tan(a) — same special-angle-lookup flavor as
+    // the arcsin version above, but without a domain restriction to
+    // combine it with.
+    id: "one-over-arctan-minus-angle",
+    difficulty: 4,
+    generate: () => {
+      const { angle, tan } = pick([
+        { angle: "0", tan: "0" },
+        { angle: "\\frac{\\pi}{6}", tan: "\\frac{\\sqrt{3}}{3}" },
+        { angle: "\\frac{\\pi}{4}", tan: "1" },
+        { angle: "\\frac{\\pi}{3}", tan: "\\sqrt{3}" },
+      ]);
+      const negative = angle !== "0" && Math.random() < 0.5;
+      const argument = angle === "0"
+        ? "\\arctan(x)"
+        : negative
+          ? `\\arctan(x)+${angle}`
+          : `\\arctan(x)-${angle}`;
+      const excluded = angle === "0" ? "0" : (negative ? `-${tan}` : tan);
+      return {
+        prompt: `f(x) = \\frac{1}{${argument}}`,
+        correct: [
+          { ...ALL_REALS },
+          { type: "point", pointVal: excluded },
+        ],
+      };
+    },
+  },
+  {
     // x/|x| and |x|/x share the same domain R\{0} — one exercise, prompt
     // picked at random each time.
     id: "x-over-abs-x",
@@ -880,6 +942,81 @@ const EXERCISES = [
       return {
         prompt: `f(x) = \\sqrt{\\frac{${linearLatex(1, -a)}}{${quadraticLatex(qb, qc)}}}`,
         correct,
+      };
+    },
+  },
+  {
+    // ln((x-n1)(x-n2)/(x-c)): the exact same quadratic-over-linear ratio
+    // and 3-case split as sqrt-quadratic-over-linear-ratio above (same
+    // critical points, same case logic), but since ln needs the ratio
+    // STRICTLY positive, every boundary that was closed there (where the
+    // ratio hits exactly 0, fine for a sqrt) becomes excluded here — so
+    // unlike the sqrt version, EVERY bracket in every case ends up open.
+    id: "ln-quadratic-over-linear-ratio",
+    difficulty: 4,
+    generate: () => {
+      const roll = Math.random();
+      let n1, n2, c, correct;
+      if (roll < 1 / 3) {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        c = n1 - randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(c), rightClosed: false, rightVal: String(n1) },
+          { type: "interval", leftClosed: false, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else if (roll < 2 / 3) {
+        const gap = randInt(2, 9);
+        n1 = randInt(-9, 9 - gap);
+        n2 = n1 + gap;
+        c = randInt(n1 + 1, n2 - 1);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(n1), rightClosed: false, rightVal: String(c) },
+          { type: "interval", leftClosed: false, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ];
+      } else {
+        ({ lo: n1, hi: n2 } = randTwoRoots());
+        c = n2 + randInt(1, 5);
+        correct = [
+          { type: "interval", leftClosed: false, leftVal: String(n1), rightClosed: false, rightVal: String(n2) },
+          { type: "interval", leftClosed: false, leftVal: String(c), rightClosed: false, rightVal: "\\infty" },
+        ];
+      }
+      const qb = -(n1 + n2);
+      const qc = n1 * n2;
+      return {
+        prompt: `f(x) = \\ln\\left(\\frac{${quadraticLatex(qb, qc)}}{${linearLatex(1, -c)}}\\right)`,
+        correct,
+      };
+    },
+  },
+  {
+    // sqrt((x-n1)(x-n2)/((x-d1)(x-d2))): quadratic over quadratic — 4
+    // distinct critical points instead of 3, giving a real 5-region sign
+    // chart. Restricted to the single interleaved pattern d1<n1<d2<n2
+    // (picked by just sorting 4 distinct random integers into those
+    // roles), since for large x the ratio behaves like 1 (degree 2 -
+    // degree 2 = 0, positive), so the rightmost region (n2, since it's a
+    // numerator root, closed) is included, and the sign alternates at
+    // each critical point moving left: excluded (d2,n2), included [n1,d2)
+    // (open at d2 since it's a denominator root), excluded (d1,n1),
+    // included (-inf,d1) (open at d1). Collapsing the excluded gaps out
+    // gives the final 3-piece domain:
+    //   (-inf, d1) u [n1, d2) u [n2, inf)
+    id: "sqrt-quadratic-over-quadratic-ratio",
+    difficulty: 4,
+    generate: () => {
+      const vals = new Set();
+      while (vals.size < 4) vals.add(randInt(-9, 9));
+      const [d1, n1, d2, n2] = [...vals].sort((x, y) => x - y);
+      const numB = -(n1 + n2), numC = n1 * n2;
+      const denB = -(d1 + d2), denC = d1 * d2;
+      return {
+        prompt: `f(x) = \\sqrt{\\frac{${quadraticLatex(numB, numC)}}{${quadraticLatex(denB, denC)}}}`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(d1) },
+          { type: "interval", leftClosed: true, leftVal: String(n1), rightClosed: false, rightVal: String(d2) },
+          { type: "interval", leftClosed: true, leftVal: String(n2), rightClosed: false, rightVal: "\\infty" },
+        ],
       };
     },
   },
@@ -1312,6 +1449,42 @@ const EXERCISES = [
       return {
         prompt: `f(x) = \\frac{1}{|x|${signedTerm(-a, "")}}`,
         correct: [{ ...ALL_REALS }],
+      };
+    },
+  },
+  {
+    // sqrt((|x|-a)/(|x|-b)): the linear-ratio sign-chart, folded through
+    // |x| — solving (y-a)/(y-b)>=0, y=|x|>=0, y!=b gives one allowed range
+    // of y (a single ray or a bounded piece, same logic as
+    // sqrt-of-linear-ratio), which then mirrors across zero when
+    // translated back from y to x. With A=min(a,b), B=max(a,b) (a,b
+    // distinct positive integers 1-9):
+    //   a<b (numerator is the SMALLER root): y in [0,A] u (B,inf) ->
+    //     x in (-inf,-B) u [-A,A] u (B,inf)  -- middle closed, outer open
+    //   a>b (numerator is the LARGER root): y in [0,A) u [B,inf) ->
+    //     x in (-inf,-B] u (-A,A) u [B,inf)  -- middle open, outer closed
+    // Three disjoint pieces either way — a shape nothing else in the bank
+    // produces.
+    id: "sqrt-of-abs-ratio",
+    difficulty: 4,
+    generate: () => {
+      const a = randInt(1, 9);
+      const b = randIntExcluding(1, 9, a);
+      const A = Math.min(a, b), B = Math.max(a, b);
+      const prompt = `f(x) = \\sqrt{\\frac{|x|-${a}}{|x|-${b}}}`;
+      return {
+        prompt,
+        correct: a < b
+          ? [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(-B) },
+              { type: "interval", leftClosed: true, leftVal: String(-A), rightClosed: true, rightVal: String(A) },
+              { type: "interval", leftClosed: false, leftVal: String(B), rightClosed: false, rightVal: "\\infty" },
+            ]
+          : [
+              { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: String(-B) },
+              { type: "interval", leftClosed: false, leftVal: String(-A), rightClosed: false, rightVal: String(A) },
+              { type: "interval", leftClosed: true, leftVal: String(B), rightClosed: false, rightVal: "\\infty" },
+            ],
       };
     },
   },
