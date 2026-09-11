@@ -1740,6 +1740,114 @@ const EXERCISES = [
       };
     },
   },
+  {
+    // f(x) = { arccos(x), x<=a ; sqrt(x-b), x>a }: unlike every piecewise
+    // exercise so far, BOTH pieces now carry a real domain restriction —
+    // arccos's own domain [-1,1] is bounded on both sides, not just
+    // one-sided like sqrt/ln. Each piece's contribution is computed
+    // independently (intersect its own condition with its assigned
+    // interval) and just handed to the grading engine as separate
+    // segments — no need to hand-collapse into named cases, since
+    // domainsEqual canonicalizes (merges touching/overlapping pieces)
+    // automatically before comparing:
+    //   arccos piece: [-1,1] ∩ (-inf,a] -> empty if a<-1 (piece
+    //                 vanishes), otherwise [-1, min(a,1)]
+    //   sqrt piece:   [b,inf) ∩ (a,inf) -> (a,inf) if b<=a, else [b,inf)
+    //                 (a truncation, same gotcha as piecewise-poly-sqrt)
+    // a=-1 is skipped: it would make the arccos piece a single ACHIEVED
+    // point {-1}, a shape this builder can't represent (its point rows
+    // mean excluded, not "the only value included").
+    id: "piecewise-arccos-sqrt",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randIntExcluding(-9, 9, -1);
+      const b = randInt(-9, 9);
+      const correct = [];
+      if (a >= -1) {
+        correct.push({ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: String(Math.min(a, 1)) });
+      }
+      correct.push(
+        b > a
+          ? { type: "interval", leftClosed: true, leftVal: String(b), rightClosed: false, rightVal: "\\infty" }
+          : { type: "interval", leftClosed: false, leftVal: String(a), rightClosed: false, rightVal: "\\infty" }
+      );
+      return {
+        prompt: `f(x) = \\begin{cases} \\arccos(x) & x \\le ${a} \\\\ \\sqrt{${linearLatex(1, -b)}} & x > ${a} \\end{cases}`,
+        correct,
+      };
+    },
+  },
+  {
+    // f(x) = { arccos(x), x<=a ; arcsin(sqrt(x)/k), x>a }: the richest
+    // piecewise yet — BOTH pieces have their own bounded domain (arccos's
+    // [-1,1], and the reused arcsin(sqrt(x)/k) piece's own [0,k^2]), so
+    // either one can independently vanish, truncate, or stay whole
+    // depending on where a falls relative to ITS OWN bounds — completely
+    // decoupled from the other piece's behavior. Same "compute each piece
+    // independently, let the engine union them" approach as above:
+    //   arccos piece: [-1,1] ∩ (-inf,a]  -> empty if a<-1, else [-1,min(a,1)]
+    //   arcsin(√x/k): [0,k^2] ∩ (a,inf)  -> [0,k^2] if a<0, (a,k^2] if
+    //                 0<=a<k^2, empty if a>=k^2
+    // a=-1 skipped for the same single-point reason as piecewise-arccos-sqrt.
+    // (The two vanishing conditions, a<-1 and a>=k^2>=4, can never hold at
+    // once, so at least one piece always survives.)
+    id: "piecewise-arccos-arcsin-sqrt",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randIntExcluding(-9, 9, -1);
+      const k = randInt(2, 9);
+      const kk = k * k;
+      const correct = [];
+      if (a >= -1) {
+        correct.push({ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: String(Math.min(a, 1)) });
+      }
+      if (a < 0) {
+        correct.push({ type: "interval", leftClosed: true, leftVal: "0", rightClosed: true, rightVal: String(kk) });
+      } else if (a < kk) {
+        correct.push({ type: "interval", leftClosed: false, leftVal: String(a), rightClosed: true, rightVal: String(kk) });
+      }
+      return {
+        prompt: `f(x) = \\begin{cases} \\arccos(x) & x \\le ${a} \\\\ \\arcsin\\left(\\frac{\\sqrt{x}}{${k}}\\right) & x > ${a} \\end{cases}`,
+        correct,
+      };
+    },
+  },
+  {
+    // f(x) = { ln(x-b), x<=a ; arcsin(x), x>a }: the bounded piece this
+    // time sits on the RIGHT (x>a) instead of the left, paired with an ln
+    // piece instead of poly/sqrt — varying both which side is bounded and
+    // what it's paired with.
+    //   ln piece:     (b,inf) ∩ (-inf,a] -> empty if b>=a, else (b,a]
+    //   arcsin piece: [-1,1] ∩ (a,inf)   -> [-1,1] if a<-1, (a,1] if
+    //                 -1<=a<1, empty if a>=1
+    // Unlike the two exercises above, these two vanishing conditions
+    // (b>=a and a>=1) CAN happen together, which would leave a genuinely
+    // empty domain — not representable, and not a useful exercise. So
+    // whenever a>=1 (arcsin already vanishing), b is forced below a to
+    // guarantee the ln piece survives.
+    id: "piecewise-ln-arcsin",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      const b = a >= 1 ? randInt(-9, a - 1) : randInt(-9, 9);
+      const correct = [];
+      if (b < a) {
+        correct.push({ type: "interval", leftClosed: false, leftVal: String(b), rightClosed: true, rightVal: String(a) });
+      }
+      if (a < -1) {
+        correct.push({ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" });
+      } else if (a < 1) {
+        correct.push({ type: "interval", leftClosed: false, leftVal: String(a), rightClosed: true, rightVal: "1" });
+      }
+      return {
+        prompt: `f(x) = \\begin{cases} \\ln\\left(${linearLatex(1, -b)}\\right) & x \\le ${a} \\\\ \\arcsin(x) & x > ${a} \\end{cases}`,
+        correct,
+      };
+    },
+  },
 ];
 
 function instantiateExercise(def) {
