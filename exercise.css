@@ -116,9 +116,17 @@
 .answer-status-text.correct { color: var(--good); }
 .answer-status-text.incorrect { color: var(--bad); }
 
-.problem-card {
+/* Houses the problem card and, during a transition, its outgoing clone —
+   overflow:hidden here (not on the card itself) clips the clone as it
+   slides past the edge; the border-radius matches the card's own so the
+   clipping edge stays rounded instead of squaring off the corners. */
+#problemCardSlot {
   position: relative;
   overflow: hidden;
+  border-radius: 12px;
+}
+
+.problem-card {
   text-align: center;
   padding: 24px 20px;
 }
@@ -128,20 +136,19 @@
   direction: ltr;
 }
 
-/* "Another exercise": a snapshot of the outgoing label+formula block is
-   placed exactly over the live one, then slides away as one page — the
-   new label+formula are already rendered underneath (no entrance
-   animation of their own), so it reads as "revealed" rather than
-   swapped. Only that block moves; the card frame and the whole answer
-   area stay put. */
-.problem-content-outgoing {
+/* "Another exercise": a snapshot of the whole outgoing card (frame and
+   all — not just its content) is placed exactly over the live one, then
+   slides away — the new card is already rendered underneath (no entrance
+   animation of its own), so it reads as "revealed" rather than swapped.
+   The rest of the page, including the answer area, stays put. */
+.problem-card-outgoing {
   position: absolute;
   margin: 0;
   transition: transform 0.32s ease, opacity 0.32s ease;
   pointer-events: none;
 }
 
-.problem-content-outgoing.animate-out {
+.problem-card-outgoing.animate-out {
   transform: translate(-18px, -14px);
   opacity: 0;
 }
