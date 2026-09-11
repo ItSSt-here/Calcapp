@@ -132,9 +132,10 @@ function randCoprimeFraction() {
 // their tier (e.g. sqrt-of-shifted-ln and the special-angle reciprocals are
 // L3/L4 but have no case-split to work through, or a lookup rather than an
 // equation to solve), while others in the same tier are slower because
-// there's more algebra to actually carry out (the quadratic-over-quadratic
-// ratio, or anything requiring two separate case-splits to combine). Use it
-// to compare pacing across exercise types, not as a difficulty proxy.
+// there's more algebra to actually carry out — several more critical
+// points to track through the same sign-chart technique, or anything
+// requiring two separate case-splits to combine. Use it to compare pacing
+// across exercise types, not as a difficulty proxy.
 const EXERCISES = [
   {
     id: "ln-x",
@@ -1044,6 +1045,10 @@ const EXERCISES = [
       };
     },
   },
+  /* Disabled: at ~7min this was the slowest exercise in the bank, but it
+  doesn't teach anything the other ratio exercises don't already cover —
+  just more critical points to grind through the same sign-chart technique.
+  Kept here in case it's wanted later.
   {
     // sqrt((x-n1)(x-n2)/((x-d1)(x-d2))): quadratic over quadratic — 4
     // distinct critical points instead of 3, giving a real 5-region sign
@@ -1076,6 +1081,7 @@ const EXERCISES = [
       };
     },
   },
+  */
   {
     // 1/(x²+Bx+C) with the denominator always shown expanded, never
     // factored — the student has to find the roots (if any) themselves.
@@ -1522,6 +1528,10 @@ const EXERCISES = [
       };
     },
   },
+  /* Disabled: at ~6min, close second-slowest in the bank, and — like the
+  quadratic-over-quadratic ratio above — it's just more bookkeeping on the
+  same sign-chart idea sqrt-of-linear-ratio already teaches, not a new
+  concept. Kept here in case it's wanted later.
   {
     // sqrt((|x|-a)/(|x|-b)): the linear-ratio sign-chart, folded through
     // |x| — solving (y-a)/(y-b)>=0, y=|x|>=0, y!=b gives one allowed range
@@ -1559,6 +1569,7 @@ const EXERCISES = [
       };
     },
   },
+  */
 ];
 
 function instantiateExercise(def) {
