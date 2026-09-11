@@ -354,6 +354,26 @@ const EXERCISES = [
     ],
   },
   {
+    // sqrt(x^2) = |x|: x^2 is never negative, so the sqrt is always
+    // defined — no restriction at all, unlike plain sqrt(x).
+    id: "sqrt-of-x2",
+    difficulty: 1,
+    prompt: "f(x) = \\sqrt{x^2}",
+    correct: [{ ...ALL_REALS }],
+  },
+  {
+    // (sqrt(x))^2: squaring is defined for every real, so it adds nothing —
+    // the only requirement is the inner sqrt itself, x>=0. Same domain as
+    // plain sqrt(x), and a deliberate contrast with sqrt(x^2) right above:
+    // same two pieces, different order, very different domain.
+    id: "sqrt-x-squared",
+    difficulty: 1,
+    prompt: "f(x) = \\left(\\sqrt{x}\\right)^2",
+    correct: [
+      { type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
+    ],
+  },
+  {
     // x^(a/b), a/b in lowest terms: domain hinges only on the parity of the
     // (already reduced) denominator b — even b needs x>=0, odd b allows all
     // reals, regardless of a's own parity.
@@ -395,6 +415,25 @@ const EXERCISES = [
       prompt: pick(["f(x) = \\arcsin(x)", "f(x) = \\arccos(x)"]),
       correct: [{ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" }],
     }),
+  },
+  {
+    // sin(arcsin(x)): sin is defined for every real, so it adds no
+    // restriction — the domain is just arcsin's own domain, [-1,1].
+    id: "sin-of-arcsin",
+    difficulty: 1,
+    prompt: "f(x) = \\sin\\left(\\arcsin(x)\\right)",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" }],
+  },
+  {
+    // arcsin(sin(x)): sin(x) is defined for every real x, but that's not
+    // the end of it — arcsin also needs its argument inside [-1,1], and
+    // sin's own OUTPUT always lands in exactly [-1,1]. Recognizing that
+    // range fact (not just "sin has no domain restriction") is the real
+    // step here, the same kind of insight sqrt-of-arccos relies on.
+    id: "arcsin-of-sin",
+    difficulty: 2,
+    prompt: "f(x) = \\arcsin\\left(\\sin(x)\\right)",
+    correct: [{ ...ALL_REALS }],
   },
   {
     // arcsin(ln(x)) and arccos(ln(x)) share the same domain: ln(x) needs to
