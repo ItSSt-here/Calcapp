@@ -1,19 +1,33 @@
 :root {
-  --bg: #f6f7fb;
+  --bg: #f7f5f0;
   --card-bg: #ffffff;
-  --text: #1f2430;
-  --muted: #6b7280;
-  --border: #e2e5ec;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --good: #16a34a;
-  --good-hover: #15803d;
-  --warn: #b45309;
-  --warn-bg: #fffbeb;
-  --warn-bg-hover: #fef3c7;
-  --warn-border: #fde68a;
+  --text: #26231f;
+  --muted: #857e73;
+  --border: #e6e0d4;
+  --accent: #0d7d72;
+  --accent-hover: #0a635a;
+  --accent-tint: #e3f2f0;
+  --accent-tint-border: #a9d6d0;
+  --good: #4f9d69;
+  --good-hover: #3f8255;
+  --warn: #c98a3f;
+  --warn-bg: #fdf4e7;
+  --warn-bg-hover: #faebd2;
+  --warn-border: #eed3a4;
   --bad: #dc2626;
   --seg-colors: #4f46e5, #0891b2, #b45309, #db2777, #16a34a;
+
+  /* Difficulty accents (levels 1-4) — deliberately muted, and stepping
+     green -> orange rather than ending in red, since red already means
+     "mistake" elsewhere in this UI. */
+  --diff-1: #4f9d69;
+  --diff-1-tint: #eaf5ee;
+  --diff-2: #8a9a3f;
+  --diff-2-tint: #f3f5e6;
+  --diff-3: #c98a3f;
+  --diff-3-tint: #faf1e2;
+  --diff-4: #cf6f3e;
+  --diff-4-tint: #fbeee3;
 }
 
 * { box-sizing: border-box; }
@@ -62,7 +76,7 @@ h1 {
 
 .label.showing-solution {
   margin-top: 14px;
-  color: #b45309;
+  color: var(--warn);
 }
 
 .label.hidden {
@@ -82,7 +96,7 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 8px;
-  background: #fafbfe;
+  background: #faf8f3;
   font-size: 1rem;
 }
 
@@ -114,9 +128,9 @@ h1 {
 }
 
 .bracket-btn:hover:not(:disabled) {
-  background: #eef0fb;
+  background: var(--accent-tint);
   border-color: var(--accent);
-  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 2px 5px rgba(13, 125, 114, 0.15);
 }
 
 .bracket-btn:disabled {
@@ -183,7 +197,7 @@ math-field.value-input::part(menu-toggle) {
   z-index: 2;
 }
 
-.field-menu-btn:hover { background: #eef0fb; border-color: var(--accent); color: var(--accent); }
+.field-menu-btn:hover { background: var(--accent-tint); border-color: var(--accent); color: var(--accent); }
 
 .field-menu {
   position: absolute;
@@ -216,7 +230,7 @@ math-field.value-input::part(menu-toggle) {
   cursor: pointer;
 }
 
-.field-menu-item:hover { background: #eef0fb; border-color: var(--accent); }
+.field-menu-item:hover { background: var(--accent-tint); border-color: var(--accent); }
 
 .point-label {
   font-weight: 600;
@@ -253,7 +267,7 @@ math-field.value-input::part(menu-toggle) {
   cursor: pointer;
 }
 
-.move-btn:hover:not(:disabled) { background: #eef0fb; border-color: var(--accent); color: var(--accent); }
+.move-btn:hover:not(:disabled) { background: var(--accent-tint); border-color: var(--accent); color: var(--accent); }
 
 .move-btn:disabled {
   opacity: 0.3;
@@ -300,9 +314,9 @@ math-field.value-input::part(menu-toggle) {
 }
 
 .add-btn:hover {
-  background: #eef0fb;
-  border-color: #c7cdf7;
-  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.15);
+  background: var(--accent-tint);
+  border-color: var(--accent-tint-border);
+  box-shadow: 0 2px 5px rgba(13, 125, 114, 0.15);
 }
 
 .add-btn:active {
@@ -316,8 +330,8 @@ math-field.value-input::part(menu-toggle) {
 }
 
 .clear-btn:hover {
-  background: #f3f4f6;
-  border-color: #d4d7de;
+  background: #f2efe7;
+  border-color: #ddd6c7;
   box-shadow: 0 2px 5px rgba(20, 22, 30, 0.08);
 }
 
@@ -341,7 +355,7 @@ math-field.value-input::part(menu-toggle) {
 }
 
 .excluded-list {
-  color: var(--coin, #b45309);
+  color: var(--warn);
 }
 
 .number-line {
