@@ -1889,10 +1889,60 @@ document.getElementById("clearBtn").addEventListener("click", () => builder.clea
 let currentExercise = null;
 let pendingRealsGuess = null; // synthetic segments awaiting confirmation via the ℝ-suggestion dialog
 
+// Difficulty filter — a row of 4 independently toggleable buttons (at least
+// one always stays active). This allows non-contiguous picks like {1, 4},
+// which isn't a "real" range but is a deliberate simplicity/UX tradeoff.
+const DIFFICULTY_STORAGE_KEY = "calcapp-domain-difficulty-v1";
+const difficultyFilterEl = document.getElementById("difficultyFilter");
+const difficultyButtons = Array.from(difficultyFilterEl.querySelectorAll(".difficulty-btn"));
+
+function loadSelectedDifficulties() {
+  try {
+    const raw = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+    const levels = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(levels) && levels.length > 0 && levels.every((n) => [1, 2, 3, 4].includes(n))) {
+      return new Set(levels);
+    }
+  } catch {}
+  return new Set([1, 2, 3, 4]);
+}
+
+const selectedDifficulties = loadSelectedDifficulties();
+
+function saveSelectedDifficulties() {
+  localStorage.setItem(DIFFICULTY_STORAGE_KEY, JSON.stringify([...selectedDifficulties]));
+}
+
+function renderDifficultyButtons() {
+  for (const btn of difficultyButtons) {
+    const level = Number(btn.dataset.level);
+    btn.classList.toggle("active", selectedDifficulties.has(level));
+  }
+}
+
+renderDifficultyButtons();
+
+difficultyFilterEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".difficulty-btn");
+  if (!btn) return;
+  const level = Number(btn.dataset.level);
+
+  if (selectedDifficulties.has(level)) {
+    if (selectedDifficulties.size === 1) return; // keep at least one level selected
+    selectedDifficulties.delete(level);
+  } else {
+    selectedDifficulties.add(level);
+  }
+  renderDifficultyButtons();
+  saveSelectedDifficulties();
+  loadExercise(pickExercise());
+});
+
 function pickExercise() {
-  const pool = EXERCISES.length > 1 && currentExercise
-    ? EXERCISES.filter((e) => e.id !== currentExercise.id)
-    : EXERCISES;
+  const base = EXERCISES.filter((e) => selectedDifficulties.has(e.difficulty));
+  const pool = base.length > 1 && currentExercise
+    ? base.filter((e) => e.id !== currentExercise.id)
+    : base;
   const def = pool[Math.floor(Math.random() * pool.length)];
   return instantiateExercise(def);
 }

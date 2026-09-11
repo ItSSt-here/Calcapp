@@ -1,3 +1,32 @@
+.difficulty-filter {
+  display: flex;
+  gap: 8px;
+}
+
+.difficulty-btn {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.05s ease;
+}
+
+.difficulty-btn:hover { background: #f3f4f6; }
+.difficulty-btn:active { transform: translateY(1px); }
+
+.difficulty-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.difficulty-btn.active:hover { background: var(--accent-hover); }
+
 .problem-card {
   text-align: center;
   padding: 24px 20px;
