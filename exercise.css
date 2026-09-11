@@ -117,6 +117,8 @@
 .answer-status-text.incorrect { color: var(--bad); }
 
 .problem-card {
+  position: relative;
+  overflow: hidden;
   text-align: center;
   padding: 24px 20px;
 }
@@ -124,6 +126,23 @@
 .problem-text {
   font-size: 1.8rem;
   direction: ltr;
+}
+
+/* "Another exercise": the outgoing formula is a snapshot placed exactly
+   over the live one, then slides away — the new formula is already
+   rendered underneath (no entrance animation of its own), so it reads as
+   "revealed" rather than swapped. Only the formula moves; the card frame,
+   the instruction label above it, and the whole answer area stay put. */
+.problem-text-outgoing {
+  position: absolute;
+  margin: 0;
+  transition: transform 0.32s ease, opacity 0.32s ease;
+  pointer-events: none;
+}
+
+.problem-text-outgoing.animate-out {
+  transform: translate(-18px, -14px);
+  opacity: 0;
 }
 
 .buttons {

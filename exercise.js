@@ -1859,6 +1859,7 @@ function instantiateExercise(def) {
   return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, ...rolled };
 }
 
+const problemCardEl = document.getElementById("problemCard");
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
 const solutionLabelEl = document.getElementById("solutionLabel");
@@ -1982,8 +1983,35 @@ function pickExercise() {
   return instantiateExercise(def);
 }
 
-function loadExercise(exercise) {
+let outgoingProblemClone = null;
+
+function removeOutgoingProblemClone() {
+  if (outgoingProblemClone) {
+    outgoingProblemClone.remove();
+    outgoingProblemClone = null;
+  }
+}
+
+function loadExercise(exercise, { animate = false } = {}) {
   currentExercise = exercise;
+
+  if (animate && problemTextEl.firstChild) {
+    removeOutgoingProblemClone(); // in case a previous transition is still mid-flight
+    const rect = problemTextEl.getBoundingClientRect();
+    const cardRect = problemCardEl.getBoundingClientRect();
+    const clone = problemTextEl.cloneNode(true);
+    clone.removeAttribute("id");
+    clone.className = "problem-text problem-text-outgoing";
+    clone.style.left = `${rect.left - cardRect.left}px`;
+    clone.style.top = `${rect.top - cardRect.top}px`;
+    clone.style.width = `${rect.width}px`;
+    problemCardEl.appendChild(clone);
+    outgoingProblemClone = clone;
+    void clone.offsetWidth; // force a reflow so the transition below actually animates
+    clone.classList.add("animate-out");
+    clone.addEventListener("transitionend", removeOutgoingProblemClone, { once: true });
+  }
+
   katex.render(exercise.prompt, problemTextEl, { throwOnError: false, displayMode: true });
 
   builder.setSegments([
@@ -2084,7 +2112,7 @@ solutionBtn.addEventListener("click", () => {
 });
 
 nextBtn.addEventListener("click", () => {
-  loadExercise(pickExercise());
+  loadExercise(pickExercise(), { animate: true });
 });
 
 loadExercise(pickExercise());
