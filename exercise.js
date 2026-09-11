@@ -1935,7 +1935,9 @@ difficultyFilterEl.addEventListener("click", (e) => {
   }
   renderDifficultyButtons();
   saveSelectedDifficulties();
-  loadExercise(pickExercise());
+  // Deliberately does not touch the exercise on screen — the filter only
+  // affects what pickExercise() draws from next ("Another exercise"),
+  // so an accidental click here can't yank away a problem mid-solve.
 });
 
 function pickExercise() {
