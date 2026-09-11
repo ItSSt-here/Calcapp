@@ -1702,6 +1702,44 @@ const EXERCISES = [
       return { prompt, correct };
     },
   },
+  {
+    // f(x) = { x^2, x<=a ; 1/(arctan(x)-theta), x>a }, theta a special
+    // angle: the x^2 piece always contributes its whole assigned interval
+    // (-inf,a]. arctan is defined everywhere, so the reciprocal piece's
+    // only condition is arctan(x)!=theta, i.e. x!=tan(theta) — the same
+    // "is the exclusion even reachable through this piece" question as
+    // piecewise-reciprocal-poly, but now the excluded value comes from a
+    // special-angle lookup (tan(theta)) instead of a given parameter:
+    //   tan(theta)<=a: not reachable (belongs to the OTHER piece's
+    //                  territory) -> domain = R
+    //   tan(theta)>a:  reachable -> domain = R \ {tan(theta)}
+    id: "piecewise-poly-arctan-angle",
+    difficulty: null,
+    estimatedMinutes: null,
+    generate: () => {
+      const a = randInt(-9, 9);
+      const { angle, tan, tanVal } = pick([
+        { angle: "0", tan: "0", tanVal: 0 },
+        { angle: "\\frac{\\pi}{6}", tan: "\\frac{\\sqrt{3}}{3}", tanVal: Math.sqrt(3) / 3 },
+        { angle: "\\frac{\\pi}{4}", tan: "1", tanVal: 1 },
+        { angle: "\\frac{\\pi}{3}", tan: "\\sqrt{3}", tanVal: Math.sqrt(3) },
+      ]);
+      const negative = angle !== "0" && Math.random() < 0.5;
+      const argument = angle === "0"
+        ? "\\arctan(x)"
+        : negative
+          ? `\\arctan(x)+${angle}`
+          : `\\arctan(x)-${angle}`;
+      const excluded = angle === "0" ? "0" : (negative ? `-${tan}` : tan);
+      const excludedVal = negative ? -tanVal : tanVal;
+      return {
+        prompt: `f(x) = \\begin{cases} x^2 & x \\le ${a} \\\\ \\frac{1}{${argument}} & x > ${a} \\end{cases}`,
+        correct: excludedVal > a
+          ? [{ ...ALL_REALS }, { type: "point", pointVal: excluded }]
+          : [{ ...ALL_REALS }],
+      };
+    },
+  },
 ];
 
 function instantiateExercise(def) {
