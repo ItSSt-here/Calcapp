@@ -97,6 +97,7 @@ function randCoprimeFraction() {
 const EXERCISES = [
   {
     id: "ln-x",
+    difficulty: 1,
     prompt: "f(x) = \\ln(x)",
     correct: [
       { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
@@ -106,6 +107,7 @@ const EXERCISES = [
     // ln(x²) and ln(|x|) have the identical domain (R\{0}) — one exercise,
     // prompt picked at random each time.
     id: "ln-x2-or-abs-x",
+    difficulty: 1,
     generate: () => ({
       prompt: pick(["f(x) = \\ln\\left(x^2\\right)", "f(x) = \\ln\\left(|x|\\right)"]),
       correct: [{ ...ALL_REALS }, { type: "point", pointVal: "0" }],
@@ -115,6 +117,7 @@ const EXERCISES = [
     // x²+a is at least a (>0 for any a in [1,10]), so ln is always defined —
     // the domain is all reals regardless of which a gets rolled.
     id: "ln-x2-plus-a",
+    difficulty: 1,
     generate: () => {
       const a = randInt(1, 10);
       return {
@@ -131,6 +134,7 @@ const EXERCISES = [
     // variants of one exercise, each keeping its own boundary formula and
     // parameter range rather than forcing a shared a.
     id: "ln-x2-or-abs-minus-a",
+    difficulty: 2,
     generate: () => {
       if (Math.random() < 0.5) {
         const a = randInt(1, 10);
@@ -156,6 +160,7 @@ const EXERCISES = [
     // ln(ax+b): needs ax+b > 0 — same root/sign logic as sqrt-linear, but
     // strict since ln(0) is undefined too.
     id: "ln-linear",
+    difficulty: 2,
     generate: () => {
       const { a, b, r } = randLinearWithRoot();
       return {
@@ -174,6 +179,7 @@ const EXERCISES = [
     // where ax+b=1 — for BOTH to land on clean integers we need a = ±1,
     // since r1 - r0 = 1/a forces a to divide 1. With a = ±1, r1 = r0 + a.
     id: "one-over-ln-linear",
+    difficulty: 3,
     generate: () => {
       const r0 = randInt(-6, 6);
       const a = Math.random() < 0.5 ? 1 : -1;
@@ -203,6 +209,7 @@ const EXERCISES = [
     //     integers when they're consecutive m, m+1 (any wider gap forces
     //     D0>=0), excluding 2 consecutive integers {m, m+1}.
     id: "one-over-ln-quadratic",
+    difficulty: 4,
     generate: () => {
       if (Math.random() < 0.5) {
         const p = randInt(-8, 8);
@@ -237,6 +244,7 @@ const EXERCISES = [
     //    5% c>1:           R (x^2+c never dips to 1 or below)
     //    5% c=1:           R, minus {0}
     id: "one-over-ln-x2-plus-c",
+    difficulty: 4,
     generate: () => {
       const roll = Math.random();
       if (roll < 0.70) {
@@ -285,6 +293,7 @@ const EXERCISES = [
     //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
     //   15% no real root:            always > 0 already -> R
     id: "ln-quadratic-3cases",
+    difficulty: 3,
     generate: () => {
       const roll = Math.random();
       let b, c, correct;
@@ -319,6 +328,7 @@ const EXERCISES = [
     // strictly between the roots — an open bounded interval (the mirror of
     // sqrt-neg-quadratic's closed one, since 0 itself is now excluded).
     id: "ln-neg-quadratic",
+    difficulty: 2,
     generate: () => {
       const { lo, hi, b, c } = randTwoRoots();
       return {
@@ -331,11 +341,13 @@ const EXERCISES = [
   },
   {
     id: "e-to-x",
+    difficulty: 1,
     prompt: "f(x) = e^x",
     correct: [{ ...ALL_REALS }],
   },
   {
     id: "sqrt-x",
+    difficulty: 1,
     prompt: "f(x) = \\sqrt{x}",
     correct: [
       { type: "interval", leftClosed: true, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
@@ -346,6 +358,7 @@ const EXERCISES = [
     // (already reduced) denominator b — even b needs x>=0, odd b allows all
     // reals, regardless of a's own parity.
     id: "x-to-frac-pos",
+    difficulty: 2,
     generate: () => {
       const { a, b } = randCoprimeFraction();
       const evenDenominator = b % 2 === 0;
@@ -361,6 +374,7 @@ const EXERCISES = [
     // x^(-a/b) = 1/x^(a/b): same parity rule as above, but x=0 is always
     // excluded since it's now a denominator.
     id: "x-to-frac-neg",
+    difficulty: 2,
     generate: () => {
       const { a, b } = randCoprimeFraction();
       const evenDenominator = b % 2 === 0;
@@ -376,6 +390,7 @@ const EXERCISES = [
     // arcsin and arccos share the same domain [-1,1] — one exercise, prompt
     // picked at random each time.
     id: "arcsin-or-arccos",
+    difficulty: 1,
     generate: () => ({
       prompt: pick(["f(x) = \\arcsin(x)", "f(x) = \\arccos(x)"]),
       correct: [{ type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" }],
@@ -386,6 +401,7 @@ const EXERCISES = [
     // be defined (x>0) AND land inside arcsin/arccos's own domain [-1,1],
     // i.e. -1 <= ln(x) <= 1  <=>  e^-1 <= x <= e.
     id: "arcsin-or-arccos-of-ln",
+    difficulty: 3,
     generate: () => ({
       prompt: pick(["f(x) = \\arcsin\\left(\\ln(x)\\right)", "f(x) = \\arccos\\left(\\ln(x)\\right)"]),
       correct: [{ type: "interval", leftClosed: true, leftVal: "e^{-1}", rightClosed: true, rightVal: "e" }],
@@ -395,6 +411,7 @@ const EXERCISES = [
     // ln(ln(x)): needs ln(x) defined (x>0) AND positive, since it's now
     // the outer ln's own argument — ln(x)>0 <=> x>1, the stronger bound.
     id: "ln-of-ln",
+    difficulty: 3,
     prompt: "f(x) = \\ln\\left(\\ln(x)\\right)",
     correct: [
       { type: "interval", leftClosed: false, leftVal: "1", rightClosed: false, rightVal: "\\infty" },
@@ -404,6 +421,7 @@ const EXERCISES = [
     // ln(arccos(x)): needs arccos(x) defined (x in [-1,1]) AND positive.
     // arccos decreases from pi (x=-1) to 0 (x=1), hitting 0 only at x=1.
     id: "ln-of-arccos",
+    difficulty: 3,
     prompt: "f(x) = \\ln\\left(\\arccos(x)\\right)",
     correct: [
       { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: false, rightVal: "1" },
@@ -413,6 +431,7 @@ const EXERCISES = [
     // ln(arcsin(x)): needs arcsin(x) defined (x in [-1,1]) AND positive.
     // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), hitting 0 only at x=0.
     id: "ln-of-arcsin",
+    difficulty: 3,
     prompt: "f(x) = \\ln\\left(\\arcsin(x)\\right)",
     correct: [
       { type: "interval", leftClosed: false, leftVal: "0", rightClosed: true, rightVal: "1" },
@@ -422,6 +441,7 @@ const EXERCISES = [
     // ln(arctan(x)): arctan is defined everywhere, so the only condition
     // is positivity — arctan(x)>0 <=> x>0 (arctan is increasing, arctan(0)=0).
     id: "ln-of-arctan",
+    difficulty: 2,
     prompt: "f(x) = \\ln\\left(\\arctan(x)\\right)",
     correct: [
       { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
@@ -432,6 +452,7 @@ const EXERCISES = [
     // sqrt) — ln(x)>=0 <=> x>=1, the stronger bound. Sibling of ln-of-ln
     // with the two functions swapped.
     id: "sqrt-of-ln",
+    difficulty: 3,
     prompt: "f(x) = \\sqrt{\\ln(x)}",
     correct: [
       { type: "interval", leftClosed: true, leftVal: "1", rightClosed: false, rightVal: "\\infty" },
@@ -442,6 +463,7 @@ const EXERCISES = [
     // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), so it's >=0 only
     // on [0,1] — a genuine extra restriction.
     id: "sqrt-of-arcsin",
+    difficulty: 3,
     prompt: "f(x) = \\sqrt{\\arcsin(x)}",
     correct: [
       { type: "interval", leftClosed: true, leftVal: "0", rightClosed: true, rightVal: "1" },
@@ -453,6 +475,7 @@ const EXERCISES = [
     // The sqrt wrapper adds no restriction at all: domain stays [-1,1],
     // a nice contrast with sqrt-of-arcsin right above.
     id: "sqrt-of-arccos",
+    difficulty: 3,
     prompt: "f(x) = \\sqrt{\\arccos(x)}",
     correct: [
       { type: "interval", leftClosed: true, leftVal: "-1", rightClosed: true, rightVal: "1" },
@@ -462,6 +485,7 @@ const EXERCISES = [
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
+    difficulty: 1,
     generate: () => ({
       prompt: pick(["f(x) = \\arctan(x)", "f(x) = \\operatorname{arccot}(x)"]),
       correct: [{ ...ALL_REALS }],
@@ -473,6 +497,7 @@ const EXERCISES = [
     // constraint when x>0 (giving x>=1), 1/x>=-1 is the binding constraint
     // when x<0 (giving x<=-1) — gives a clean two-ray domain.
     id: "arcsin-or-arccos-of-reciprocal",
+    difficulty: 3,
     generate: () => ({
       prompt: pick(["f(x) = \\arcsin\\left(\\frac{1}{x}\\right)", "f(x) = \\arccos\\left(\\frac{1}{x}\\right)"]),
       correct: [
@@ -488,6 +513,7 @@ const EXERCISES = [
     // to [v-1/|a|, v+1/|a|]. |a| in {1,2} keeps the half-width a clean 1
     // or 0.5.
     id: "arcsin-or-arccos-of-linear",
+    difficulty: 2,
     generate: () => {
       const fn = pick(["\\arcsin", "\\arccos"]);
       const a = pick([-2, -1, 1, 2]);
@@ -515,6 +541,7 @@ const EXERCISES = [
     // a domain shape it can't represent either (its point rows mean
     // "excluded", not "the only value allowed").
     id: "arcsin-or-arccos-of-abs",
+    difficulty: 3,
     generate: () => {
       const fn = pick(["\\arcsin", "\\arccos"]);
       const twoIntervals = Math.random() < 0.5;
@@ -541,6 +568,7 @@ const EXERCISES = [
     // (squaring is safe, both sides non-negative) — always a single closed
     // interval [0, a^2], no case split.
     id: "arcsin-or-arccos-of-sqrt-over-a",
+    difficulty: 2,
     generate: () => {
       const fn = pick(["\\arcsin", "\\arccos"]);
       const a = randInt(2, 9);
@@ -558,6 +586,7 @@ const EXERCISES = [
     // arctan adds nothing, same "don't overthink it" flavor as
     // sqrt(arccos(x)).
     id: "arctan-of-reciprocal",
+    difficulty: 2,
     prompt: "f(x) = \\arctan\\left(\\frac{1}{x}\\right)",
     correct: [
       { ...ALL_REALS },
@@ -568,6 +597,7 @@ const EXERCISES = [
     // x/|x| and |x|/x share the same domain R\{0} — one exercise, prompt
     // picked at random each time.
     id: "x-over-abs-x",
+    difficulty: 2,
     generate: () => ({
       prompt: pick(["f(x) = \\frac{x}{|x|}", "f(x) = \\frac{|x|}{x}"]),
       correct: [{ ...ALL_REALS }, { type: "point", pointVal: "0" }],
@@ -581,6 +611,7 @@ const EXERCISES = [
     // numerator's root (ratio=0 there, sqrt(0) fine), open/excluded at the
     // denominator's root.
     id: "sqrt-of-linear-ratio",
+    difficulty: 4,
     generate: () => {
       const { lo, hi } = randTwoRoots();
       const aIsLo = Math.random() < 0.5;
@@ -607,6 +638,7 @@ const EXERCISES = [
     // (-inf,lo) u (hi,inf), open at both ends, regardless of which root is
     // labeled the numerator vs denominator (unlike sqrt-of-linear-ratio).
     id: "strict-of-linear-ratio",
+    difficulty: 4,
     generate: () => {
       const { lo, hi } = randTwoRoots();
       const aIsLo = Math.random() < 0.5;
@@ -636,6 +668,7 @@ const EXERCISES = [
     //   c > n2:      [n1, n2] u (c, inf)  -- a closed bounded interval
     //                plus an open ray
     id: "sqrt-quadratic-over-linear-ratio",
+    difficulty: 4,
     generate: () => {
       const roll = Math.random();
       let n1, n2, c, correct;
@@ -682,6 +715,7 @@ const EXERCISES = [
     //   a > n2:      (n1, n2) u [a, inf)  -- an open bounded interval
     //                plus a closed ray
     id: "sqrt-linear-over-quadratic-ratio",
+    difficulty: 4,
     generate: () => {
       const roll = Math.random();
       let n1, n2, a, correct;
@@ -729,6 +763,7 @@ const EXERCISES = [
     // the domain condition is exactly the same x^2+Bx+C != 0, just reached
     // by different reasoning.
     id: "one-over-quadratic",
+    difficulty: 3,
     generate: () => {
       const roll = Math.random();
       let b, c, correct;
@@ -766,6 +801,7 @@ const EXERCISES = [
     // sqrt(ax+b): needs ax+b >= 0. Which side of the root is included flips
     // with the sign of a.
     id: "sqrt-linear",
+    difficulty: 2,
     generate: () => {
       const { a, b, r } = randLinearWithRoot();
       return {
@@ -787,6 +823,7 @@ const EXERCISES = [
     //   15% one repeated root:       always >= 0        -> R
     //   15% no real root:            always > 0          -> R
     id: "sqrt-quadratic-3cases",
+    difficulty: 3,
     generate: () => {
       const roll = Math.random();
       let b, c, correct;
@@ -822,6 +859,7 @@ const EXERCISES = [
     // a bounded closed interval, the mirror image of the "excluded middle"
     // case above.
     id: "sqrt-neg-quadratic",
+    difficulty: 2,
     generate: () => {
       const { lo, hi, b, c } = randTwoRoots();
       return {
@@ -837,6 +875,7 @@ const EXERCISES = [
     // closed-boundary mirror of ln-x2-or-abs-minus-a (sqrt(0) is fine, so
     // both boundaries are included here instead of excluded).
     id: "sqrt-x2-or-abs-minus-a",
+    difficulty: 2,
     generate: () => {
       if (Math.random() < 0.5) {
         const a = randInt(1, 10);
@@ -865,6 +904,7 @@ const EXERCISES = [
     // mirror of the outside-rays pair above, and the same
     // open-for-ln/closed-for-sqrt pairing sum-bounded-interval uses.
     id: "ln-or-sqrt-of-a-minus-abs",
+    difficulty: 2,
     generate: () => {
       const a = randInt(1, 9);
       if (Math.random() < 0.5) {
@@ -883,6 +923,7 @@ const EXERCISES = [
     // 1/sqrt(ax+b): same root as sqrt-linear, but now strict since x=root
     // itself would make the denominator 0.
     id: "one-over-sqrt-linear",
+    difficulty: 2,
     generate: () => {
       const { a, b, r } = randLinearWithRoot();
       return {
@@ -902,6 +943,7 @@ const EXERCISES = [
     //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
     //   15% no real root:            always > 0 already -> R
     id: "one-over-sqrt-quadratic",
+    difficulty: 3,
     generate: () => {
       const roll = Math.random();
       let b, c, correct;
@@ -956,6 +998,7 @@ const EXERCISES = [
     //                          case, which lands exactly on its boundary):
     //                          [hi, hi+0.5) u (hi+0.5, inf)
     id: "sqrt-quadratic-over-ln-linear",
+    difficulty: 4,
     generate: () => {
       const roll = Math.random();
       let lo, hi, a, correct;
@@ -1016,6 +1059,7 @@ const EXERCISES = [
     //   20% m in {-1,0}:  single interval (m=1 would collapse to a
     //       single point, so it's excluded as degenerate)
     id: "arccos-or-arcsin-of-quadratic",
+    difficulty: 3,
     generate: () => {
       const fn = pick(["\\arccos", "\\arcsin"]);
       const v = randInt(-9, 9);
@@ -1046,6 +1090,7 @@ const EXERCISES = [
     // (open interval (a,b)), sqrt only needs each factor non-negative
     // (closed interval [a,b], since sqrt(0) is fine).
     id: "sum-bounded-interval",
+    difficulty: 2,
     generate: () => {
       const { lo, hi } = randTwoRoots();
       const rightTerm = hi === 0 ? "-x" : `${hi}-x`;
@@ -1069,6 +1114,7 @@ const EXERCISES = [
     //   a<0 (25%): sqrt(x)>=0>a always holds -> [0, inf) unchanged
     //   a=0 (25%): sqrt(x)>0 <=> x>0 -> (0, inf)
     id: "ln-of-shifted-sqrt",
+    difficulty: 4,
     generate: () => {
       const roll = Math.random();
       if (roll < 0.50) {
@@ -1098,6 +1144,7 @@ const EXERCISES = [
     // split: the domain is always the single ray [e^a, inf). a=0 is
     // skipped since it's exactly the plain sqrt-of-ln exercise above.
     id: "sqrt-of-shifted-ln",
+    difficulty: 3,
     generate: () => {
       const a = randIntExcluding(-9, 9, 0);
       const boundary = a === 1 ? "e" : `e^{${a}}`;
@@ -1113,6 +1160,7 @@ const EXERCISES = [
     //   a=0 (25%): |x|=0 only at x=0 -> R\{0}
     //   a<0 (25%): |x|>=0>a always, |x|-a is never 0 -> R unchanged
     id: "one-over-abs-minus-a",
+    difficulty: 2,
     generate: () => {
       const roll = Math.random();
       if (roll < 0.50) {
@@ -1139,7 +1187,7 @@ const EXERCISES = [
 
 function instantiateExercise(def) {
   const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
-  return { id: def.id, ...rolled };
+  return { id: def.id, difficulty: def.difficulty, ...rolled };
 }
 
 const problemTextEl = document.getElementById("problemText");
