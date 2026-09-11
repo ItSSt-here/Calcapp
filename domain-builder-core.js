@@ -102,6 +102,34 @@ function niceTickStep(span, targetCount = 8) {
   return step * mag;
 }
 
+// Rough rendered width of a label at this font size — doesn't need to be
+// exact, just enough to detect when two labels would overlap.
+function estimateLabelWidth(text, fontSize) {
+  return text.length * fontSize * 0.6 + 6;
+}
+
+// Lays out a set of same-side labels (all the interval-boundary labels
+// above the axis, or all the point/zero labels below it), pushing any
+// that would overlap their neighbor further out (a new "row") instead of
+// letting the text merge into an unreadable blob — e.g. two boundaries a
+// fraction apart, like √8 and √9. The dots themselves are never moved:
+// only the text, so the picture never misrepresents how close the actual
+// values are.
+function layoutLabels(labels, baseY, dir, rowStep = 13) {
+  const rows = []; // rows[level] = rightmost x used so far at that level
+  let svg = "";
+  for (const lbl of [...labels].sort((a, b) => a.x - b.x)) {
+    const halfWidth = estimateLabelWidth(lbl.text, lbl.fontSize) / 2;
+    let level = 0;
+    while (rows[level] !== undefined && lbl.x - halfWidth < rows[level]) level++;
+    rows[level] = lbl.x + halfWidth;
+    const y = baseY + dir * level * rowStep;
+    const weight = lbl.bold ? ` font-weight="700"` : "";
+    svg += `<text x="${lbl.x}" y="${y}" font-size="${lbl.fontSize}" fill="${lbl.color}" text-anchor="middle"${weight}>${lbl.text}</text>`;
+  }
+  return svg;
+}
+
 // Draws the same axis-with-intervals-and-points picture the live builder
 // uses, into any target <svg> — so a "show solution" display can render
 // the correct answer's number line without needing its own builder instance.
@@ -145,7 +173,12 @@ export function renderNumberLineSVG(segments, svgEl) {
     <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
       <path d="M8,0 L0,4 L8,8 Z" fill="#c9c2b0"/>
     </marker>
-    <filter id="axisDepth" x="-60%" y="-60%" width="220%" height="220%">
+    <!-- userSpaceOnUse with an explicit region: the default objectBoundingBox
+         sizing collapses to zero area on a perfectly horizontal <line> (our
+         interval bars all are), which makes Chromium drop the whole element,
+         not just the shadow — so the region here can't depend on each
+         filtered element's own bounding box. -->
+    <filter id="axisDepth" filterUnits="userSpaceOnUse" x="0" y="0" width="${width}" height="${height}">
       <feDropShadow dx="0" dy="1" stdDeviation="0.75" flood-color="#000" flood-opacity="0.2"/>
     </filter>
   </defs>`;
@@ -161,11 +194,17 @@ export function renderNumberLineSVG(segments, svgEl) {
     svg += `<line x1="${tx}" y1="${axisY - 4}" x2="${tx}" y2="${axisY + 4}" stroke="#e4ddd0" stroke-width="1.5"/>`;
   }
 
+  // Boundary/point labels are collected here instead of drawn immediately,
+  // so overlapping ones (e.g. two boundaries a fraction apart, like √8 and
+  // √9) can be spread into stacked rows afterward — see layoutLabels().
+  const aboveLabels = []; // interval boundary labels
+  const belowLabels = []; // zero tick + excluded-point labels
+
   // zero tick — always shown, since it's now always kept in range
   if (min <= 0 && max >= 0) {
     const zx = x(0);
     svg += `<line x1="${zx}" y1="${axisY - 9}" x2="${zx}" y2="${axisY + 9}" stroke="#26231f" stroke-width="2.5"/>`;
-    svg += `<text x="${zx}" y="${axisY + 24}" font-size="13" font-weight="700" fill="#26231f" text-anchor="middle">0</text>`;
+    belowLabels.push({ x: zx, text: "0", color: "#26231f", fontSize: 13, bold: true });
   }
 
   // Draw intervals first (background layer), then excluded points on top —
@@ -193,7 +232,7 @@ export function renderNumberLineSVG(segments, svgEl) {
       svg += s.leftClosed
         ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}" filter="url(#axisDepth)"/>`
         : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
-      svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+      aboveLabels.push({ x: cx, text: label, color, fontSize: 12 });
     }
     if (!rInf) {
       const cx = x(r);
@@ -201,7 +240,7 @@ export function renderNumberLineSVG(segments, svgEl) {
       svg += s.rightClosed
         ? `<circle cx="${cx}" cy="${y}" r="6" fill="${color}" filter="url(#axisDepth)"/>`
         : `<circle cx="${cx}" cy="${y}" r="6" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
-      svg += `<text x="${cx}" y="${y - 14}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+      aboveLabels.push({ x: cx, text: label, color, fontSize: 12 });
     }
   });
 
@@ -217,8 +256,11 @@ export function renderNumberLineSVG(segments, svgEl) {
     svg += `<circle cx="${cx}" cy="${y}" r="7" fill="white" stroke="${color}" stroke-width="3" filter="url(#axisDepth)"/>`;
     svg += `<line x1="${cx - 5}" y1="${y - 5}" x2="${cx + 5}" y2="${y + 5}" stroke="${color}" stroke-width="2"/>`;
     svg += `<line x1="${cx - 5}" y1="${y + 5}" x2="${cx + 5}" y2="${y - 5}" stroke="${color}" stroke-width="2"/>`;
-    svg += `<text x="${cx}" y="${y + 24}" font-size="12" fill="${color}" text-anchor="middle">${label}</text>`;
+    belowLabels.push({ x: cx, text: label, color, fontSize: 12 });
   });
+
+  svg += layoutLabels(aboveLabels, axisY - 14, -1);
+  svg += layoutLabels(belowLabels, axisY + 24, 1);
 
   svg += `<text x="${width - pad + 14}" y="${axisY + 5}" font-size="13" fill="#a89f8c">x</text>`;
 
