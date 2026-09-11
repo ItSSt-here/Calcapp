@@ -181,6 +181,21 @@ export function renderNumberLineSVG(segments, svgEl) {
     <filter id="axisDepth" filterUnits="userSpaceOnUse" x="0" y="0" width="${width}" height="${height}">
       <feDropShadow dx="0" dy="1" stdDeviation="0.75" flood-color="#000" flood-opacity="0.2"/>
     </filter>
+    <!-- One vertical sheen gradient per segment color, so each bar reads as
+         a glossy pill rather than a flat stripe. userSpaceOnUse with a
+         vertical vector (x1==x2) makes it depend only on the bar's fixed
+         6px thickness, not its own (zero-height, for a horizontal line)
+         bounding box — the same objectBoundingBox trap axisDepth above
+         works around. (currentColor doesn't work here: a gradient <stop>
+         resolves it through the gradient's own position in the document —
+         inside <defs> — not through whatever element references the
+         gradient via url(), so each color needs its own literal gradient.) -->
+    ${SEG_COLORS.map((c, idx) => `
+    <linearGradient id="barSheen-${idx}" gradientUnits="userSpaceOnUse" x1="0" y1="${axisY - 3}" x2="0" y2="${axisY + 3}">
+      <stop offset="0%" stop-color="${c}" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="${c}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${c}" stop-opacity="0.65"/>
+    </linearGradient>`).join("")}
   </defs>`;
 
   // Faint unlabeled ruler ticks — purely a background texture, drawn before
@@ -224,7 +239,7 @@ export function renderNumberLineSVG(segments, svgEl) {
     const x2 = rInf ? width - pad + 8 : x(Math.min(r, max));
     if (x2 <= x1 && !lInf && !rInf) return;
 
-    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="6" stroke-linecap="butt" filter="url(#axisDepth)"/>`;
+    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="url(#barSheen-${i % SEG_COLORS.length})" stroke-width="6" stroke-linecap="butt" filter="url(#axisDepth)"/>`;
 
     if (!lInf) {
       const cx = x(l);
