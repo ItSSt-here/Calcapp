@@ -1092,6 +1092,22 @@ const EXERCISES = [
     },
   },
   {
+    // sqrt(ln(x)-a): needs ln(x)-a>=0 <=> ln(x)>=a <=> x>=e^a. Since e^a>0
+    // for every real a, this bound is always at least as strong as ln's
+    // own x>0 requirement — unlike ln(sqrt(x)-a) above, there's no case
+    // split: the domain is always the single ray [e^a, inf). a=0 is
+    // skipped since it's exactly the plain sqrt-of-ln exercise above.
+    id: "sqrt-of-shifted-ln",
+    generate: () => {
+      const a = randIntExcluding(-9, 9, 0);
+      const boundary = a === 1 ? "e" : `e^{${a}}`;
+      return {
+        prompt: `f(x) = \\sqrt{\\ln(x)${signedTerm(-a, "")}}`,
+        correct: [{ type: "interval", leftClosed: true, leftVal: boundary, rightClosed: false, rightVal: "\\infty" }],
+      };
+    },
+  },
+  {
     // 1/(|x|-a): needs |x| != a.
     //   a>0 (50%): |x|=a at x=+-a -> excludes two points, R\{-a,a}
     //   a=0 (25%): |x|=0 only at x=0 -> R\{0}
