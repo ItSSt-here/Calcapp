@@ -22,6 +22,11 @@ function tokenize(latexInput) {
     if (rest.startsWith("\\pi")) { tokens.push({ t: "PI" }); i += 3; continue; }
     if (rest.startsWith("\\sqrt")) { tokens.push({ t: "SQRT" }); i += 5; continue; }
     if (rest.startsWith("\\frac")) { tokens.push({ t: "FRAC" }); i += 5; continue; }
+    // MathLive's own virtual keyboard inserts Euler's number as this macro
+    // (not a bare "e") — e.g. tapping "e" on a phone's math keypad while
+    // typing a boundary value. Without this, that input silently fails to
+    // parse (evaluateExpr returns null) even though it looks like valid input.
+    if (rest.startsWith("\\exponentialE")) { tokens.push({ t: "E" }); i += 13; continue; }
     // Fallbacks in case a field was typed rather than built with the toolbar
     // and MathLive left a bare word unconverted.
     if (/^infinity(?![a-zA-Z])/.test(rest)) { tokens.push({ t: "INFTY" }); i += 8; continue; }
@@ -193,9 +198,17 @@ function readArg(s, i) {
   return { text: s[i] ?? "", next: i + 1 };
 }
 
-// Replaces \sqrt{...} and \frac{...}{...} with √(...) and (...)/(...),
-// recursing into each argument first so nesting (e.g. a sqrt inside a
-// frac's numerator) converts correctly at any depth.
+// A single number or bare identifier (already past the infty/pi/e symbol
+// substitutions above) never needs disambiguating parens around it.
+function isAtomicTerm(text) {
+  return /^-?(\d+(\.\d+)?|[a-zA-Zπ∞])$/.test(text.trim());
+}
+
+// Replaces \sqrt{...} and \frac{...}{...} with √(...) and .../..., recursing
+// into each argument first so nesting (e.g. a sqrt inside a frac's
+// numerator) converts correctly at any depth. A frac's numerator/denominator
+// only gets wrapped in parens when it isn't already a single atom — so
+// \frac{1}{e} reads as "1/e", not the noisier "(1)/(e)".
 function convertRadicalsAndFracs(s) {
   let out = "";
   let i = 0;
@@ -209,7 +222,9 @@ function convertRadicalsAndFracs(s) {
     if (s.startsWith("\\frac", i)) {
       const num = readArg(s, i + 5);
       const den = readArg(s, num.next);
-      out += `(${convertRadicalsAndFracs(num.text)})/(${convertRadicalsAndFracs(den.text)})`;
+      const numOut = convertRadicalsAndFracs(num.text);
+      const denOut = convertRadicalsAndFracs(den.text);
+      out += `${isAtomicTerm(num.text) ? numOut : `(${numOut})`}/${isAtomicTerm(den.text) ? denOut : `(${denOut})`}`;
       i = den.next;
       continue;
     }
@@ -230,11 +245,15 @@ export function latexToPlainText(latex) {
   s = s.replace(/\\,|\\!|\\;|\\:|\\ /g, "");
   s = s.replace(/\\infty/g, "∞");
   s = s.replace(/\\pi/g, "π");
+  s = s.replace(/\\exponentialE/g, "e"); // MathLive's virtual-keyboard macro for Euler's number
 
   s = convertRadicalsAndFracs(s);
 
   s = s.replace(/\^\{([^{}]*)\}/g, (_, e) => toSuperscript(e));
   s = s.replace(/\^([0-9])/g, (_, d) => toSuperscript(d));
   s = s.replace(/[{}]/g, "");
+  // Euler's number reads better in math italic than a plain letter — but
+  // only a standalone "e", never part of a longer identifier or number.
+  s = s.replace(/(?<![a-zA-Z0-9])e(?![a-zA-Z0-9])/g, "𝑒");
   return s.trim();
 }
