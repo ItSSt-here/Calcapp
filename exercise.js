@@ -1859,8 +1859,8 @@ function instantiateExercise(def) {
   return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, ...rolled };
 }
 
+const problemCardSlotEl = document.getElementById("problemCardSlot");
 const problemCardEl = document.getElementById("problemCard");
-const problemContentEl = document.getElementById("problemContent");
 const problemTextEl = document.getElementById("problemText");
 const feedbackEl = document.getElementById("feedback");
 const solutionLabelEl = document.getElementById("solutionLabel");
@@ -1998,20 +1998,21 @@ function loadExercise(exercise, { animate = false } = {}) {
 
   if (animate && problemTextEl.firstChild) {
     removeOutgoingProblemClone(); // in case a previous transition is still mid-flight
-    // Clone the whole label+formula block, not just the formula: a future
-    // exercise type may use a different instruction than this one, and the
-    // two should read as one page sliding away together, not two unrelated
-    // things moving in sync.
-    const rect = problemContentEl.getBoundingClientRect();
-    const cardRect = problemCardEl.getBoundingClientRect();
-    const clone = problemContentEl.cloneNode(true);
+    // Clone the whole card -- frame and all, not just its content -- so it
+    // reads as the entire page sliding aside, with the next one already
+    // waiting in place underneath. A future exercise type may use a
+    // different instruction than this one, so the label rides along with
+    // the formula rather than staying fixed while only the formula moves.
+    const rect = problemCardEl.getBoundingClientRect();
+    const slotRect = problemCardSlotEl.getBoundingClientRect();
+    const clone = problemCardEl.cloneNode(true);
     clone.removeAttribute("id");
     clone.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
-    clone.classList.add("problem-content-outgoing");
-    clone.style.left = `${rect.left - cardRect.left}px`;
-    clone.style.top = `${rect.top - cardRect.top}px`;
+    clone.classList.add("problem-card-outgoing");
+    clone.style.left = `${rect.left - slotRect.left}px`;
+    clone.style.top = `${rect.top - slotRect.top}px`;
     clone.style.width = `${rect.width}px`;
-    problemCardEl.appendChild(clone);
+    problemCardSlotEl.appendChild(clone);
     outgoingProblemClone = clone;
     void clone.offsetWidth; // force a reflow so the transition below actually animates
     clone.classList.add("animate-out");
