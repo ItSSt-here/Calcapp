@@ -2019,6 +2019,7 @@ function loadExercise(exercise, { animate = false } = {}) {
     clone.addEventListener("transitionend", removeOutgoingProblemClone, { once: true });
   }
 
+  problemCardEl.dataset.level = exercise.difficulty;
   katex.render(exercise.prompt, problemTextEl, { throwOnError: false, displayMode: true });
 
   builder.setSegments([
