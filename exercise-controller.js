@@ -1,5 +1,5 @@
 // Shared page controller for a "describe the correct set of reals"
-// exercise page. Both the domain page and the range (image) page ask the
+// exercise page. Both the domain page and the image page ask the
 // student to build a union of intervals/excluded points and check it
 // against a correct answer of the same shape — this wires up the segment
 // builder, the number-line preview, the check/solution/next buttons, and
