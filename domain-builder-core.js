@@ -359,6 +359,7 @@ export function createDomainBuilder(elements, options = {}) {
       const row = document.createElement("div");
       row.className = "segment-row";
       row.dataset.id = s.id;
+      row.style.setProperty("--seg-color", color);
 
       const moveBtns = `
           <span class="move-btns">
@@ -371,27 +372,33 @@ export function createDomainBuilder(elements, options = {}) {
         const lInf = isInf(evaluateExpr(s.leftVal));
         const rInf = isInf(evaluateExpr(s.rightVal));
         row.innerHTML = `
-          <span class="segment-swatch" style="background:${color}"></span>
-          <button class="bracket-btn" data-action="toggle-left-bracket" ${lInf ? "disabled" : ""}>${lInf ? "(" : (s.leftClosed ? "[" : "(")}</button>
-          ${fieldWrapHTML("left-val", "x")}
-          <span class="comma">,</span>
-          ${fieldWrapHTML("right-val", "x")}
-          <button class="bracket-btn" data-action="toggle-right-bracket" ${rInf ? "disabled" : ""}>${rInf ? ")" : (s.rightClosed ? "]" : ")")}</button>
+          <span class="row-math">
+            <button class="bracket-btn${!lInf && s.leftClosed ? " closed" : ""}" data-action="toggle-left-bracket" ${lInf ? "disabled" : ""}>${lInf ? "(" : (s.leftClosed ? "[" : "(")}</button>
+            ${fieldWrapHTML("left-val", "x")}
+            <span class="comma">,</span>
+            ${fieldWrapHTML("right-val", "x")}
+            <button class="bracket-btn${!rInf && s.rightClosed ? " closed" : ""}" data-action="toggle-right-bracket" ${rInf ? "disabled" : ""}>${rInf ? ")" : (s.rightClosed ? "]" : ")")}</button>
+          </span>
           <span class="row-spacer"></span>
-          <span class="row-preview">${escapeHtml(segmentText(s))}</span>
-          ${moveBtns}
-          <button class="remove-btn" data-action="remove" title="Remove">✕</button>
+          <span class="row-tools">
+            <span class="row-preview">${escapeHtml(segmentText(s))}</span>
+            ${moveBtns}
+            <button class="remove-btn" data-action="remove" title="Remove">✕</button>
+          </span>
         `;
       } else {
         if (!isPointValid(s)) row.classList.add("invalid");
         row.innerHTML = `
-          <span class="segment-swatch" style="background:${color}"></span>
-          <span class="point-label">x ≠</span>
-          ${fieldWrapHTML("point-val", "a")}
+          <span class="row-math">
+            <span class="point-label">x ≠</span>
+            ${fieldWrapHTML("point-val", "a")}
+          </span>
           <span class="row-spacer"></span>
-          <span class="row-preview">${escapeHtml(segmentText(s))}</span>
-          ${moveBtns}
-          <button class="remove-btn" data-action="remove" title="Remove">✕</button>
+          <span class="row-tools">
+            <span class="row-preview">${escapeHtml(segmentText(s))}</span>
+            ${moveBtns}
+            <button class="remove-btn" data-action="remove" title="Remove">✕</button>
+          </span>
         `;
       }
       segmentsEl.appendChild(row);
@@ -509,8 +516,16 @@ export function createDomainBuilder(elements, options = {}) {
         const rInf = isInf(evaluateExpr(s.rightVal));
         const leftBtn = rowNow.querySelector('[data-action="toggle-left-bracket"]');
         const rightBtn = rowNow.querySelector('[data-action="toggle-right-bracket"]');
-        if (leftBtn) { leftBtn.disabled = lInf; leftBtn.textContent = lInf ? "(" : (s.leftClosed ? "[" : "("); }
-        if (rightBtn) { rightBtn.disabled = rInf; rightBtn.textContent = rInf ? ")" : (s.rightClosed ? "]" : ")"); }
+        if (leftBtn) {
+          leftBtn.disabled = lInf;
+          leftBtn.textContent = lInf ? "(" : (s.leftClosed ? "[" : "(");
+          leftBtn.classList.toggle("closed", !lInf && s.leftClosed);
+        }
+        if (rightBtn) {
+          rightBtn.disabled = rInf;
+          rightBtn.textContent = rInf ? ")" : (s.rightClosed ? "]" : ")");
+          rightBtn.classList.toggle("closed", !rInf && s.rightClosed);
+        }
       }
     }
     if (onChange) onChange(getSegments());
