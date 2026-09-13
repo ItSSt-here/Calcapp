@@ -126,10 +126,35 @@
   border-radius: 12px;
 }
 
+/* The problem card is the actual point of the page, so it gets its own
+   accent — a top stripe plus a faint tinted gradient, both keyed to the
+   exercise's own difficulty level (data-level, set from JS) via the same
+   --diff-N palette the difficulty buttons already use. Falls back to the
+   plain accent color before a level is known (e.g. first paint). */
 .problem-card {
+  position: relative;
   text-align: center;
-  padding: 24px 20px;
+  padding: 30px 20px 24px;
+  border-color: var(--diff-accent, var(--accent));
+  background: linear-gradient(135deg, var(--card-bg), var(--diff-tint, var(--accent-tint)));
+  box-shadow: 0 3px 12px rgba(20, 22, 30, 0.07);
 }
+
+.problem-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 12px 12px 0 0;
+  background: var(--diff-accent, var(--accent));
+}
+
+.problem-card[data-level="1"] { --diff-accent: var(--diff-1); --diff-tint: var(--diff-1-tint); }
+.problem-card[data-level="2"] { --diff-accent: var(--diff-2); --diff-tint: var(--diff-2-tint); }
+.problem-card[data-level="3"] { --diff-accent: var(--diff-3); --diff-tint: var(--diff-3-tint); }
+.problem-card[data-level="4"] { --diff-accent: var(--diff-4); --diff-tint: var(--diff-4-tint); }
 
 .problem-text {
   font-size: 1.8rem;
@@ -151,9 +176,9 @@
 .problem-card-outgoing.animate-out {
   transform: translate(-18px, -14px);
   opacity: 0;
-  /* Grows well past the card's own resting shadow (0 1px 3px, barely
-     visible) while it slides, so the outgoing layer reads as physically
-     lifting off the page rather than just fading in place. */
+  /* Grows well past the card's own resting shadow while it slides, so the
+     outgoing layer reads as physically lifting off the page rather than
+     just fading in place. */
   box-shadow: 0 14px 28px rgba(20, 22, 30, 0.22);
 }
 
