@@ -1,0 +1,36 @@
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.topic-card {
+  display: block;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 22px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(20, 22, 30, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.topic-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px rgba(13, 125, 114, 0.15);
+}
+
+.topic-card:active { transform: translateY(1px); }
+
+.topic-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.topic-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+}

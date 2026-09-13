@@ -58,6 +58,17 @@ h1 {
   margin-bottom: 24px;
 }
 
+.home-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.home-link:hover { color: var(--accent); }
+
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
