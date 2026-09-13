@@ -87,29 +87,53 @@ h1 {
 /* Segment rows                                                          */
 /* ---------------------------------------------------------------------- */
 
+/* Each row carries the same color used for its segment on the number line
+   and preview (set as --seg-color inline from JS), read here as a left
+   accent border and a faint tint — so the color coding that already ties
+   a row to its place on the axis actually shows up on the row itself,
+   not just in a small dot. Falls back to a plain border/background when
+   --seg-color or color-mix() isn't available. */
 .segment-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 14px;
   border: 1px solid var(--border);
+  border-left: 4px solid var(--seg-color, var(--border));
   border-radius: 8px;
   margin-bottom: 8px;
   background: #faf8f3;
+  background: color-mix(in srgb, var(--seg-color, var(--border)) 7%, #faf8f3);
   font-size: 1rem;
 }
 
 .segment-row.invalid {
   border-color: var(--bad);
+  border-left-color: var(--bad);
   background: #fef2f2;
 }
 
-.segment-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
+/* The math being entered (brackets + fields) vs. the row's own controls
+   (preview text, reorder, remove) — grouped separately, with a divider
+   between them, instead of one undifferentiated line of boxes. */
+.row-math {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* A pill rather than a border-left divider: on a narrow screen this whole
+   cluster wraps onto its own line as one flex item, where a divider would
+   otherwise read as a stray mark with nothing left of it to divide from. */
+.row-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .bracket-btn {
@@ -124,13 +148,23 @@ h1 {
   color: var(--text);
   flex-shrink: 0;
   box-shadow: 0 1px 2px rgba(20, 22, 30, 0.06);
-  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
 }
 
 .bracket-btn:hover:not(:disabled) {
   background: var(--accent-tint);
   border-color: var(--accent);
   box-shadow: 0 2px 5px rgba(13, 125, 114, 0.15);
+}
+
+/* A closed bracket ("[", "]") is a real state, not just a glyph choice —
+   give it the same tinted/filled treatment used for an active toggle
+   elsewhere on the page, so open vs. closed reads at a glance. */
+.bracket-btn.closed {
+  background: var(--accent-tint);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  font-weight: 700;
 }
 
 .bracket-btn:disabled {
@@ -247,27 +281,34 @@ math-field.value-input::part(menu-toggle) {
   direction: ltr;
 }
 
+/* One bordered stepper instead of two separate buttons — reads as a
+   single reorder control rather than two more boxes in the row. */
 .move-btns {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
   flex-shrink: 0;
 }
 
 .move-btn {
-  width: 20px;
-  height: 15px;
+  width: 22px;
+  height: 17px;
   padding: 0;
   line-height: 1;
-  font-size: 0.6rem;
-  border-radius: 3px;
-  border: 1px solid var(--border);
+  font-size: 0.65rem;
+  border: none;
   background: white;
   color: var(--muted);
   cursor: pointer;
 }
 
-.move-btn:hover:not(:disabled) { background: var(--accent-tint); border-color: var(--accent); color: var(--accent); }
+.move-btn + .move-btn {
+  border-top: 1px solid var(--border);
+}
+
+.move-btn:hover:not(:disabled) { background: var(--accent-tint); color: var(--accent); }
 
 .move-btn:disabled {
   opacity: 0.3;
@@ -285,9 +326,10 @@ math-field.value-input::part(menu-toggle) {
   font-size: 0.9rem;
   line-height: 1;
   flex-shrink: 0;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
-.remove-btn:hover { background: #fef2f2; }
+.remove-btn:hover { background: #fef2f2; border-color: var(--bad); }
 
 /* ---------------------------------------------------------------------- */
 /* Add buttons                                                           */
