@@ -139,6 +139,69 @@ const IMAGE_EXERCISES = [
     prompt: "f(x) = -x^2",
     correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "0" }],
   },
+  {
+    // e^x's range (0,∞) shifted up by 3.
+    id: "exp-plus-3",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = e^x + 3",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "3", rightClosed: false, rightVal: "\\infty" }],
+  },
+  {
+    // x^2's range [0,∞) shifted up by 4.
+    id: "x-squared-plus-4",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = x^2 + 4",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "4", rightClosed: false, rightVal: "\\infty" }],
+  },
+  {
+    // sin's range [-1,1] shifted down by 2.
+    id: "sin-minus-2",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = \\sin(x) - 2",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "-3", rightClosed: true, rightVal: "-1" }],
+  },
+  {
+    // cos's range [-1,1] scaled by 4.
+    id: "four-cos",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 4\\cos(x)",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "-4", rightClosed: true, rightVal: "4" }],
+  },
+  {
+    // arctan's range (-pi/2,pi/2) scaled by 2.
+    id: "two-arctan",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 2\\arctan(x)",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\pi", rightClosed: false, rightVal: "\\pi" }],
+  },
+  {
+    // e^x's range (0,∞) negated.
+    id: "neg-exp",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = -e^x",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "0" }],
+  },
+  {
+    // sqrt(x)'s range [0,∞) negated.
+    id: "neg-sqrt-x",
+    difficulty: 2,
+    estimatedMinutes: 0.5,
+    signature: "f: [0, \\infty) \\to \\mathbb{R}",
+    prompt: "f(x) = -\\sqrt{x}",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "0" }],
+  },
 ];
 
 function instantiateExercise(def) {
@@ -146,12 +209,64 @@ function instantiateExercise(def) {
   return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, signature: def.signature, ...rolled };
 }
 
+// Difficulty filter — same 4-button, at-least-one-active pattern as the
+// domain page (see exercise.js), with its own storage key. Levels 3-4 have
+// no exercises yet, so selecting only those falls back to the full bank
+// below rather than crashing on an empty pool.
+const DIFFICULTY_STORAGE_KEY = "calcapp-image-difficulty-v1";
+const difficultyFilterEl = document.getElementById("difficultyFilter");
+const difficultyButtons = Array.from(difficultyFilterEl.querySelectorAll(".difficulty-btn"));
+
+function loadSelectedDifficulties() {
+  try {
+    const raw = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+    const levels = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(levels) && levels.length > 0 && levels.every((n) => [1, 2, 3, 4].includes(n))) {
+      return new Set(levels);
+    }
+  } catch {}
+  return new Set([1, 2, 3, 4]);
+}
+
+const selectedDifficulties = loadSelectedDifficulties();
+
+function saveSelectedDifficulties() {
+  localStorage.setItem(DIFFICULTY_STORAGE_KEY, JSON.stringify([...selectedDifficulties]));
+}
+
+function renderDifficultyButtons() {
+  for (const btn of difficultyButtons) {
+    const level = Number(btn.dataset.level);
+    btn.classList.toggle("active", selectedDifficulties.has(level));
+  }
+}
+
+renderDifficultyButtons();
+
+difficultyFilterEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".difficulty-btn");
+  if (!btn) return;
+  const level = Number(btn.dataset.level);
+
+  if (selectedDifficulties.has(level)) {
+    if (selectedDifficulties.size === 1) return; // keep at least one level selected
+    selectedDifficulties.delete(level);
+  } else {
+    selectedDifficulties.add(level);
+  }
+  renderDifficultyButtons();
+  saveSelectedDifficulties();
+  // Deliberately does not touch the exercise on screen — see exercise.js.
+});
+
 let lastExerciseId = null;
 
 function pickExercise() {
-  const pool = IMAGE_EXERCISES.length > 1 && lastExerciseId !== null
-    ? IMAGE_EXERCISES.filter((e) => e.id !== lastExerciseId)
-    : IMAGE_EXERCISES;
+  const filtered = IMAGE_EXERCISES.filter((e) => selectedDifficulties.has(e.difficulty));
+  const base = filtered.length > 0 ? filtered : IMAGE_EXERCISES;
+  const pool = base.length > 1 && lastExerciseId !== null
+    ? base.filter((e) => e.id !== lastExerciseId)
+    : base;
   const def = pool[Math.floor(Math.random() * pool.length)];
   lastExerciseId = def.id;
   return instantiateExercise(def);
