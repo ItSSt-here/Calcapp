@@ -6,12 +6,13 @@ import { createExercisePage } from "./exercise-controller.js";
 //
 // Unlike a domain problem, an image problem is only well-posed once the
 // function's own domain is pinned down too (restrict the domain and the
-// image can change) — so every prompt states the full f: A -> B signature
-// rather than just the formula.
+// image can change) — so every exercise states the full f: A -> B
+// signature as a small caption, kept separate from the (bigger) formula.
 const IMAGE_EXERCISES = [
   {
     id: "exp",
-    prompt: "f: \\mathbb{R} \\to \\mathbb{R}, \\quad f(x) = e^x",
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = e^x",
     correct: [
       { type: "interval", leftClosed: false, leftVal: "0", rightClosed: false, rightVal: "\\infty" },
     ],
