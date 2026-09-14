@@ -202,6 +202,51 @@ const IMAGE_EXERCISES = [
     prompt: "f(x) = -\\sqrt{x}",
     correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "0" }],
   },
+  {
+    // sin's range [-1,1] scaled by 2, then shifted down by 1.
+    id: "two-sin-minus-1",
+    difficulty: 2,
+    estimatedMinutes: 1,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 2\\sin(x) - 1",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "-3", rightClosed: true, rightVal: "1" }],
+  },
+  {
+    // cos's range [-1,1] scaled by -2, then shifted up by 3.
+    id: "three-minus-two-cos",
+    difficulty: 2,
+    estimatedMinutes: 1,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 3 - 2\\cos(x)",
+    correct: [{ type: "interval", leftClosed: true, leftVal: "1", rightClosed: true, rightVal: "5" }],
+  },
+  {
+    // e^x's range (0,∞) negated, then shifted up by 5.
+    id: "five-minus-exp",
+    difficulty: 2,
+    estimatedMinutes: 1,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 5 - e^x",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "5" }],
+  },
+  {
+    // sqrt(x)'s range [0,∞) negated, then shifted up by 2.
+    id: "neg-sqrt-plus-2",
+    difficulty: 2,
+    estimatedMinutes: 1,
+    signature: "f: [0, \\infty) \\to \\mathbb{R}",
+    prompt: "f(x) = -\\sqrt{x} + 2",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "2" }],
+  },
+  {
+    // x^2's range [0,∞) negated, then shifted up by 4.
+    id: "four-minus-x-squared",
+    difficulty: 2,
+    estimatedMinutes: 1,
+    signature: "f: \\mathbb{R} \\to \\mathbb{R}",
+    prompt: "f(x) = 4 - x^2",
+    correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "4" }],
+  },
 ];
 
 function instantiateExercise(def) {
