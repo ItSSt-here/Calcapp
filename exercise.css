@@ -161,6 +161,22 @@
   direction: ltr;
 }
 
+/* A small caption above the formula for exercises that need to state more
+   than the formula itself (e.g. an image problem's full f: A -> B
+   signature, since restricting the domain changes the image) — kept
+   visually secondary to the formula so it doesn't compete with it, and
+   collapses to nothing (via .hidden) for exercise types that don't set one. */
+.problem-signature {
+  font-size: 1rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  direction: ltr;
+}
+
+.problem-signature.hidden {
+  display: none;
+}
+
 /* "Another exercise": a snapshot of the whole outgoing card (frame and
    all — not just its content) is placed exactly over the live one, then
    slides away — the new card is already rendered underneath (no entrance

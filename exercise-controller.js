@@ -15,6 +15,7 @@ export const ALL_REALS = { type: "interval", leftClosed: false, leftVal: "-\\inf
 export function createExercisePage(pickExercise) {
   const problemCardSlotEl = document.getElementById("problemCardSlot");
   const problemCardEl = document.getElementById("problemCard");
+  const problemSignatureEl = document.getElementById("problemSignature"); // optional — not every exercise type sets one
   const problemTextEl = document.getElementById("problemText");
   const feedbackEl = document.getElementById("feedback");
   const solutionLabelEl = document.getElementById("solutionLabel");
@@ -113,6 +114,15 @@ export function createExercisePage(pickExercise) {
     }
 
     problemCardEl.dataset.level = exercise.difficulty;
+    if (problemSignatureEl) {
+      if (exercise.signature) {
+        problemSignatureEl.classList.remove("hidden");
+        katex.render(exercise.signature, problemSignatureEl, { throwOnError: false, displayMode: false });
+      } else {
+        problemSignatureEl.classList.add("hidden");
+        problemSignatureEl.textContent = "";
+      }
+    }
     katex.render(exercise.prompt, problemTextEl, { throwOnError: false, displayMode: true });
 
     builder.setSegments([
