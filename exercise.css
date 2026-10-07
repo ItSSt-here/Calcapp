@@ -35,6 +35,30 @@
 
 .difficulty-btn.active:hover { filter: brightness(0.9); }
 
+.difficulty-btn.empty { opacity: 0.35; }
+
+/* The tag a link restricted the bank to (e.g. ?tag=basic), shown so the
+   student knows they're seeing a subset. */
+.tag-chip {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--diff-1-tint);
+  color: var(--diff-1);
+  border: 1px solid var(--diff-1);
+}
+
+.tag-chip.unknown {
+  background: transparent;
+  color: #888;
+  border-color: #ccc;
+}
+
+.tag-chip.hidden { display: none; }
+
 /* Four states for the "Your answer" card border: a soft teal tint while
    working (the page's own accent, not blue — this page deliberately moved
    away from blue/indigo earlier), amber while viewing the solution (the

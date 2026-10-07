@@ -391,6 +391,7 @@ const EXERCISES = [
   },
   {
     id: "e-to-x",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.25,
     prompt: "f(x) = e^x",
@@ -398,6 +399,7 @@ const EXERCISES = [
   },
   {
     id: "sqrt-x",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     prompt: "f(x) = \\sqrt{x}",
@@ -409,6 +411,7 @@ const EXERCISES = [
     // sqrt(x^2) = |x|: x^2 is never negative, so the sqrt is always
     // defined — no restriction at all, unlike plain sqrt(x).
     id: "sqrt-of-x2",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     prompt: "f(x) = \\sqrt{x^2}",
@@ -420,6 +423,7 @@ const EXERCISES = [
     // plain sqrt(x), and a deliberate contrast with sqrt(x^2) right above:
     // same two pieces, different order, very different domain.
     id: "sqrt-x-squared",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.75,
     prompt: "f(x) = \\left(\\sqrt{x}\\right)^2",
@@ -432,6 +436,7 @@ const EXERCISES = [
     // (already reduced) denominator b — even b needs x>=0, odd b allows all
     // reals, regardless of a's own parity.
     id: "x-to-frac-pos",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -449,6 +454,7 @@ const EXERCISES = [
     // x^(-a/b) = 1/x^(a/b): same parity rule as above, but x=0 is always
     // excluded since it's now a denominator.
     id: "x-to-frac-neg",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -603,6 +609,7 @@ const EXERCISES = [
     // as opposed to every other trig-flavored exercise in the bank, which
     // only ever uses their inverses (arcsin, arccos, arctan, arccot).
     id: "sin-or-cos",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.25,
     generate: () => ({
@@ -785,6 +792,7 @@ const EXERCISES = [
     // x/|x| and |x|/x share the same domain R\{0} — one exercise, prompt
     // picked at random each time.
     id: "x-over-abs-x",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.75,
     generate: () => ({
@@ -800,6 +808,7 @@ const EXERCISES = [
     // numerator's root (ratio=0 there, sqrt(0) fine), open/excluded at the
     // denominator's root.
     id: "sqrt-of-linear-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 4,
     generate: () => {
@@ -827,17 +836,21 @@ const EXERCISES = [
     // one exercise, like arcsin-or-arccos. Strict positivity always gives
     // (-inf,lo) u (hi,inf), open at both ends, regardless of which root is
     // labeled the numerator vs denominator (unlike sqrt-of-linear-ratio).
+    // Only the 1/sqrt variant is "basic" (ln isn't) — under that tag,
+    // generate() is told so and skips the ln variant.
     id: "strict-of-linear-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 4,
-    generate: () => {
+    generate: ({ tag } = {}) => {
       const { lo, hi } = randTwoRoots();
       const aIsLo = Math.random() < 0.5;
       const a = aIsLo ? lo : hi;
       const b = aIsLo ? hi : lo;
       const ratio = `\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}`;
+      const sqrtPrompt = `f(x) = \\frac{1}{\\sqrt{${ratio}}}`;
       return {
-        prompt: pick([`f(x) = \\frac{1}{\\sqrt{${ratio}}}`, `f(x) = \\ln\\left(${ratio}\\right)`]),
+        prompt: tag === "basic" ? sqrtPrompt : pick([sqrtPrompt, `f(x) = \\ln\\left(${ratio}\\right)`]),
         correct: [
           { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
           { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
@@ -913,6 +926,7 @@ const EXERCISES = [
     //   c > n2:      [n1, n2] u (c, inf)  -- a closed bounded interval
     //                plus an open ray
     id: "sqrt-quadratic-over-linear-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 5.5,
     generate: () => {
@@ -961,6 +975,7 @@ const EXERCISES = [
     //   a > n2:      (n1, n2) u [a, inf)  -- an open bounded interval
     //                plus a closed ray
     id: "sqrt-linear-over-quadratic-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 5.5,
     generate: () => {
@@ -1092,6 +1107,7 @@ const EXERCISES = [
     // the domain condition is exactly the same x^2+Bx+C != 0, just reached
     // by different reasoning.
     id: "one-over-quadratic",
+    tags: ["basic"],
     difficulty: 3,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -1131,6 +1147,7 @@ const EXERCISES = [
     // sqrt(ax+b): needs ax+b >= 0. Which side of the root is included flips
     // with the sign of a.
     id: "sqrt-linear",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     generate: () => {
@@ -1154,6 +1171,7 @@ const EXERCISES = [
     //   15% one repeated root:       always >= 0        -> R
     //   15% no real root:            always > 0          -> R
     id: "sqrt-quadratic-3cases",
+    tags: ["basic"],
     difficulty: 3,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -1191,6 +1209,7 @@ const EXERCISES = [
     // a bounded closed interval, the mirror image of the "excluded middle"
     // case above.
     id: "sqrt-neg-quadratic",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 2,
     generate: () => {
@@ -1208,6 +1227,7 @@ const EXERCISES = [
     // closed-boundary mirror of ln-x2-or-abs-minus-a (sqrt(0) is fine, so
     // both boundaries are included here instead of excluded).
     id: "sqrt-x2-or-abs-minus-a",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -1237,12 +1257,14 @@ const EXERCISES = [
     // centered on 0, just open for ln vs closed for sqrt. The inside
     // mirror of the outside-rays pair above, and the same
     // open-for-ln/closed-for-sqrt pairing sum-bounded-interval uses.
+    // Only the sqrt variant is "basic" — see strict-of-linear-ratio.
     id: "ln-or-sqrt-of-a-minus-abs",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
-    generate: () => {
+    generate: ({ tag } = {}) => {
       const a = randInt(1, 9);
-      if (Math.random() < 0.5) {
+      if (tag !== "basic" && Math.random() < 0.5) {
         return {
           prompt: `f(x) = \\ln\\left(${a}-|x|\\right)`,
           correct: [{ type: "interval", leftClosed: false, leftVal: String(-a), rightClosed: false, rightVal: String(a) }],
@@ -1258,6 +1280,7 @@ const EXERCISES = [
     // 1/sqrt(ax+b): same root as sqrt-linear, but now strict since x=root
     // itself would make the denominator 0.
     id: "one-over-sqrt-linear",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     generate: () => {
@@ -1279,6 +1302,7 @@ const EXERCISES = [
     //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
     //   15% no real root:            always > 0 already -> R
     id: "one-over-sqrt-quadratic",
+    tags: ["basic"],
     difficulty: 3,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -1428,14 +1452,16 @@ const EXERCISES = [
     // boundary rule for each: ln needs each factor strictly positive
     // (open interval (a,b)), sqrt only needs each factor non-negative
     // (closed interval [a,b], since sqrt(0) is fine).
+    // Only the sqrt variant is "basic" — see strict-of-linear-ratio.
     id: "sum-bounded-interval",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 2,
-    generate: () => {
+    generate: ({ tag } = {}) => {
       const { lo, hi } = randTwoRoots();
       const rightTerm = hi === 0 ? "-x" : `${hi}-x`;
       const leftTerm = linearLatex(1, -lo);
-      if (Math.random() < 0.5) {
+      if (tag === "basic" || Math.random() < 0.5) {
         return {
           prompt: `f(x) = \\sqrt{${leftTerm}} + \\sqrt{${rightTerm}}`,
           correct: [{ type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: true, rightVal: String(hi) }],
@@ -1502,6 +1528,7 @@ const EXERCISES = [
     //   a=0 (25%): |x|=0 only at x=0 -> R\{0}
     //   a<0 (25%): |x|>=0>a always, |x|-a is never 0 -> R unchanged
     id: "one-over-abs-minus-a",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -1598,6 +1625,7 @@ const EXERCISES = [
     //   b>a:  only [b,inf) of the assigned interval (a,inf) survives ->
     //         combined with (-inf,a] leaves a genuine gap (a,b) excluded
     id: "piecewise-poly-sqrt",
+    tags: ["basic"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     generate: () => {
@@ -1652,6 +1680,7 @@ const EXERCISES = [
     //   c>a:  c belongs to the OTHER piece's territory (x>a uses x^2, not
     //         the reciprocal) -> the exclusion never applies, domain=R
     id: "piecewise-reciprocal-poly",
+    tags: ["basic"],
     difficulty: 3,
     estimatedMinutes: 2,
     generate: () => {
@@ -1852,8 +1881,33 @@ const EXERCISES = [
   },
 ];
 
+// Tag filter — a link like domain.html?tag=basic restricts the bank to
+// entries whose `tags` include it, so a teacher can hand out a link that
+// only draws exercises the class has already learned the functions for.
+// Tags so far:
+//   basic - only functions from lectures 1-2: polynomials, powers/roots,
+//           e^x, sin/cos/tan/cot, |x|, piecewise, and +,-,*,/ and
+//           composition of those (no ln, no inverse trig).
+// An entry with a mix of tagged and untagged prompt variants carries the
+// tag too, and its generate() receives { tag } so it can stick to the
+// matching variants. An unknown tag (no entry has it) is ignored, with a
+// note next to the chip, rather than leaving an empty bank.
+const requestedTag = new URLSearchParams(location.search).get("tag");
+const taggedExercises = requestedTag ? EXERCISES.filter((e) => e.tags?.includes(requestedTag)) : [];
+const activeTag = taggedExercises.length > 0 ? requestedTag : null;
+const tagBank = activeTag ? taggedExercises : EXERCISES;
+
+const tagChipEl = document.getElementById("tagChip");
+if (requestedTag) {
+  tagChipEl.classList.remove("hidden");
+  tagChipEl.textContent = activeTag
+    ? `#${activeTag}`
+    : `#${requestedTag} — no exercises have this tag, showing all`;
+  tagChipEl.classList.toggle("unknown", !activeTag);
+}
+
 function instantiateExercise(def) {
-  const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
+  const rolled = def.generate ? def.generate({ tag: activeTag }) : { prompt: def.prompt, correct: def.correct };
   return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, ...rolled };
 }
 
@@ -1885,6 +1939,9 @@ function renderDifficultyButtons() {
   for (const btn of difficultyButtons) {
     const level = Number(btn.dataset.level);
     btn.classList.toggle("active", selectedDifficulties.has(level));
+    // Under a tag, a level with no tagged exercises is greyed out (it would
+    // draw nothing) — still clickable, so the saved selection isn't lost.
+    btn.classList.toggle("empty", !tagBank.some((e) => e.difficulty === level));
   }
 }
 
@@ -1911,7 +1968,10 @@ difficultyFilterEl.addEventListener("click", (e) => {
 let lastExerciseId = null;
 
 function pickExercise() {
-  const base = EXERCISES.filter((e) => selectedDifficulties.has(e.difficulty));
+  const byLevel = tagBank.filter((e) => selectedDifficulties.has(e.difficulty));
+  // Under a tag the selected levels might all be empty — fall back to the
+  // whole tagged bank rather than having nothing to draw.
+  const base = byLevel.length > 0 ? byLevel : tagBank;
   const pool = base.length > 1 && lastExerciseId !== null
     ? base.filter((e) => e.id !== lastExerciseId)
     : base;
