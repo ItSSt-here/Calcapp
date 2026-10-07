@@ -17,6 +17,8 @@ export function createExercisePage(pickExercise) {
   const problemCardEl = document.getElementById("problemCard");
   const problemSignatureEl = document.getElementById("problemSignature"); // optional — not every exercise type sets one
   const problemTextEl = document.getElementById("problemText");
+  const problemLabelEl = document.getElementById("problemLabel");
+  const confirmLabelEl = document.getElementById("confirmLabel");
   const feedbackEl = document.getElementById("feedback");
   const solutionLabelEl = document.getElementById("solutionLabel");
   const previewEl = document.getElementById("preview");
@@ -114,6 +116,12 @@ export function createExercisePage(pickExercise) {
     }
 
     problemCardEl.dataset.level = exercise.difficulty;
+    // A page mixing topics (domain + image) asks a different question per
+    // exercise, so the exercise carries its own wording when it has one.
+    if (exercise.instruction) problemLabelEl.textContent = exercise.instruction;
+    if (exercise.noun && confirmLabelEl) {
+      confirmLabelEl.textContent = `The ${exercise.noun} you entered has no interval — did you mean:`;
+    }
     if (problemSignatureEl) {
       if (exercise.signature) {
         problemSignatureEl.classList.remove("hidden");

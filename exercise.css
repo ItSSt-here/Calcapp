@@ -37,6 +37,9 @@
 
 .difficulty-btn.empty { opacity: 0.35; }
 
+/* Levels a teacher's link left out aren't shown at all. */
+.difficulty-btn.hidden { display: none; }
+
 /* The tag a link restricted the bank to (e.g. ?tag=basic), shown so the
    student knows they're seeing a subset. */
 .tag-chip {

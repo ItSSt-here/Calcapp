@@ -1,4 +1,6 @@
-import { ALL_REALS, createExercisePage } from "./exercise-controller.js";
+// Domain exercise bank — data only (no DOM), so both the practice page and
+// the teacher's link builder can import it.
+const ALL_REALS = { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "\\infty" };
 
 // Hard-coded exercise bank. Domain problems are too varied/structural to
 // generate randomly, so each is authored by hand: a prompt (LaTeX, rendered
@@ -134,7 +136,17 @@ function randCoprimeFraction() {
 // points to track through the same sign-chart technique, or anything
 // requiring two separate case-splits to combine. Use it to compare pacing
 // across exercise types, not as a difficulty proxy.
-const EXERCISES = [
+//
+// Entries may also carry `tags`, which a practice link can filter on
+// (e.g. ?tag=basic) so a teacher only hands out what the class has
+// learned so far. Tags so far:
+//   basic - only functions from lectures 1-2: polynomials, powers/roots,
+//           e^x, sin/cos/tan/cot, |x|, piecewise, and +,-,*,/ and
+//           composition of those (no ln, no inverse trig).
+// An entry with a mix of tagged and untagged prompt variants carries the
+// tag too, and its generate() receives { tag } so it can stick to the
+// matching variants.
+export const DOMAIN_EXERCISES = [
   {
     id: "ln-x",
     difficulty: 1,
@@ -1881,103 +1893,3 @@ const EXERCISES = [
   },
 ];
 
-// Tag filter — a link like domain.html?tag=basic restricts the bank to
-// entries whose `tags` include it, so a teacher can hand out a link that
-// only draws exercises the class has already learned the functions for.
-// Tags so far:
-//   basic - only functions from lectures 1-2: polynomials, powers/roots,
-//           e^x, sin/cos/tan/cot, |x|, piecewise, and +,-,*,/ and
-//           composition of those (no ln, no inverse trig).
-// An entry with a mix of tagged and untagged prompt variants carries the
-// tag too, and its generate() receives { tag } so it can stick to the
-// matching variants. An unknown tag (no entry has it) is ignored, with a
-// note next to the chip, rather than leaving an empty bank.
-const requestedTag = new URLSearchParams(location.search).get("tag");
-const taggedExercises = requestedTag ? EXERCISES.filter((e) => e.tags?.includes(requestedTag)) : [];
-const activeTag = taggedExercises.length > 0 ? requestedTag : null;
-const tagBank = activeTag ? taggedExercises : EXERCISES;
-
-const tagChipEl = document.getElementById("tagChip");
-if (requestedTag) {
-  tagChipEl.classList.remove("hidden");
-  tagChipEl.textContent = activeTag
-    ? `#${activeTag}`
-    : `#${requestedTag} — no exercises have this tag, showing all`;
-  tagChipEl.classList.toggle("unknown", !activeTag);
-}
-
-function instantiateExercise(def) {
-  const rolled = def.generate ? def.generate({ tag: activeTag }) : { prompt: def.prompt, correct: def.correct };
-  return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, ...rolled };
-}
-
-// Difficulty filter — a row of 4 independently toggleable buttons (at least
-// one always stays active). This allows non-contiguous picks like {1, 4},
-// which isn't a "real" range but is a deliberate simplicity/UX tradeoff.
-const DIFFICULTY_STORAGE_KEY = "calcapp-domain-difficulty-v1";
-const difficultyFilterEl = document.getElementById("difficultyFilter");
-const difficultyButtons = Array.from(difficultyFilterEl.querySelectorAll(".difficulty-btn"));
-
-function loadSelectedDifficulties() {
-  try {
-    const raw = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
-    const levels = raw ? JSON.parse(raw) : null;
-    if (Array.isArray(levels) && levels.length > 0 && levels.every((n) => [1, 2, 3, 4].includes(n))) {
-      return new Set(levels);
-    }
-  } catch {}
-  return new Set([1, 2, 3, 4]);
-}
-
-const selectedDifficulties = loadSelectedDifficulties();
-
-function saveSelectedDifficulties() {
-  localStorage.setItem(DIFFICULTY_STORAGE_KEY, JSON.stringify([...selectedDifficulties]));
-}
-
-function renderDifficultyButtons() {
-  for (const btn of difficultyButtons) {
-    const level = Number(btn.dataset.level);
-    btn.classList.toggle("active", selectedDifficulties.has(level));
-    // Under a tag, a level with no tagged exercises is greyed out (it would
-    // draw nothing) — still clickable, so the saved selection isn't lost.
-    btn.classList.toggle("empty", !tagBank.some((e) => e.difficulty === level));
-  }
-}
-
-renderDifficultyButtons();
-
-difficultyFilterEl.addEventListener("click", (e) => {
-  const btn = e.target.closest(".difficulty-btn");
-  if (!btn) return;
-  const level = Number(btn.dataset.level);
-
-  if (selectedDifficulties.has(level)) {
-    if (selectedDifficulties.size === 1) return; // keep at least one level selected
-    selectedDifficulties.delete(level);
-  } else {
-    selectedDifficulties.add(level);
-  }
-  renderDifficultyButtons();
-  saveSelectedDifficulties();
-  // Deliberately does not touch the exercise on screen — the filter only
-  // affects what pickExercise() draws from next ("Another exercise"),
-  // so an accidental click here can't yank away a problem mid-solve.
-});
-
-let lastExerciseId = null;
-
-function pickExercise() {
-  const byLevel = tagBank.filter((e) => selectedDifficulties.has(e.difficulty));
-  // Under a tag the selected levels might all be empty — fall back to the
-  // whole tagged bank rather than having nothing to draw.
-  const base = byLevel.length > 0 ? byLevel : tagBank;
-  const pool = base.length > 1 && lastExerciseId !== null
-    ? base.filter((e) => e.id !== lastExerciseId)
-    : base;
-  const def = pool[Math.floor(Math.random() * pool.length)];
-  lastExerciseId = def.id;
-  return instantiateExercise(def);
-}
-
-createExercisePage(pickExercise);

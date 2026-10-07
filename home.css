@@ -34,3 +34,16 @@
   color: var(--muted);
   font-size: 0.95rem;
 }
+
+.teacher-link {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.teacher-link a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.teacher-link a:hover { color: var(--accent); }

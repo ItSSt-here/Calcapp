@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create a Practice Link</title>
+<link rel="stylesheet" href="domain-builder.css">
+<link rel="stylesheet" href="exercise.css">
+<link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="home-link">← Topics</a>
+    <h1>Create a practice link</h1>
+    <p class="subtitle">Choose what your students practice, then send them the link. It opens straight on the questions.</p>
+
+    <div class="card">
+      <div class="label">1. Topics</div>
+      <div id="topicPicker" class="choice-row"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">2. Difficulty levels the students see</div>
+      <div id="levelPicker" class="difficulty-filter">
+        <button type="button" class="difficulty-btn" data-level="1">1</button>
+        <button type="button" class="difficulty-btn" data-level="2">2</button>
+        <button type="button" class="difficulty-btn" data-level="3">3</button>
+        <button type="button" class="difficulty-btn" data-level="4">4</button>
+      </div>
+      <div id="levelCounts" class="level-counts"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">3. Which exercises</div>
+      <label class="check-row">
+        <input type="checkbox" id="basicOnly">
+        <span><span class="tag-chip">#basic</span> only: <span id="basicDesc"></span></span>
+      </label>
+    </div>
+
+    <div class="card">
+      <div class="label">Link for your students</div>
+      <div id="summary" class="summary"></div>
+      <div class="link-row">
+        <input id="linkOutput" class="link-output" type="text" readonly>
+        <button type="button" id="copyBtn" class="link-btn">Copy</button>
+        <a id="openLink" class="link-btn secondary" target="_blank" rel="noopener">Open</a>
+      </div>
+      <div id="linkWarning" class="link-warning hidden"></div>
+    </div>
+  </div>
+
+  <script type="module" src="teacher.js"></script>
+</body>
+</html>

@@ -1,9 +1,6 @@
-import { createExercisePage } from "./exercise-controller.js";
-
-// Exercise bank — mirrors the domain one's difficulty/estimatedMinutes
-// convention (see exercise.js for the full rubric). So far every entry is
-// L1: reading off the range of one elementary function directly, no
-// algebra or case-split.
+// Image exercise bank — data only (no DOM), like domain-bank.js, whose
+// difficulty/estimatedMinutes/tags conventions it mirrors (see there for
+// the full rubric). Levels 3-4 have no exercises yet.
 //
 // Unlike a domain problem, an image problem is only well-posed once the
 // function's own domain is pinned down too (restrict the domain and the
@@ -11,9 +8,10 @@ import { createExercisePage } from "./exercise-controller.js";
 // signature as a small caption, kept separate from the (bigger) formula.
 const ALL_REALS = { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "\\infty" };
 
-const IMAGE_EXERCISES = [
+export const IMAGE_EXERCISES = [
   {
     id: "exp",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -25,6 +23,7 @@ const IMAGE_EXERCISES = [
   {
     // x^2 >= 0 always, and hits every non-negative value.
     id: "x-squared",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -36,6 +35,7 @@ const IMAGE_EXERCISES = [
   {
     // |x| >= 0 always, same range shape as x^2.
     id: "abs-x",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -47,6 +47,7 @@ const IMAGE_EXERCISES = [
   {
     // x^3 is a bijection R -> R (odd, strictly increasing, unbounded both ways).
     id: "x-cubed",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -57,6 +58,7 @@ const IMAGE_EXERCISES = [
     // sin and cos share the same range [-1,1] — prompt picked at random
     // each time, same pattern as the domain bank's arcsin-or-arccos.
     id: "sin-or-cos",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -78,6 +80,7 @@ const IMAGE_EXERCISES = [
     // 1/x hits every real except 0 (never 0 itself, since a fraction with a
     // nonzero numerator can't vanish).
     id: "one-over-x",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\setminus \\{0\\} \\to \\mathbb{R}",
@@ -87,6 +90,7 @@ const IMAGE_EXERCISES = [
   {
     // sqrt(x) on its natural domain [0,∞) covers every non-negative value.
     id: "sqrt-x",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: [0, \\infty) \\to \\mathbb{R}",
@@ -124,6 +128,7 @@ const IMAGE_EXERCISES = [
   {
     // x^4 >= 0 always, same range shape as x^2.
     id: "x-to-4",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -133,6 +138,7 @@ const IMAGE_EXERCISES = [
   {
     // -x^2 <= 0 always — the mirror image of x^2.
     id: "neg-x-squared",
+    tags: ["basic"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -142,6 +148,7 @@ const IMAGE_EXERCISES = [
   {
     // e^x's range (0,∞) shifted up by 3.
     id: "exp-plus-3",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -151,6 +158,7 @@ const IMAGE_EXERCISES = [
   {
     // x^2's range [0,∞) shifted up by 4.
     id: "x-squared-plus-4",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -160,6 +168,7 @@ const IMAGE_EXERCISES = [
   {
     // sin's range [-1,1] shifted down by 2.
     id: "sin-minus-2",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -169,6 +178,7 @@ const IMAGE_EXERCISES = [
   {
     // cos's range [-1,1] scaled by 4.
     id: "four-cos",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -187,6 +197,7 @@ const IMAGE_EXERCISES = [
   {
     // e^x's range (0,∞) negated.
     id: "neg-exp",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -196,6 +207,7 @@ const IMAGE_EXERCISES = [
   {
     // sqrt(x)'s range [0,∞) negated.
     id: "neg-sqrt-x",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: [0, \\infty) \\to \\mathbb{R}",
@@ -205,6 +217,7 @@ const IMAGE_EXERCISES = [
   {
     // sin's range [-1,1] scaled by 2, then shifted down by 1.
     id: "two-sin-minus-1",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -214,6 +227,7 @@ const IMAGE_EXERCISES = [
   {
     // cos's range [-1,1] scaled by -2, then shifted up by 3.
     id: "three-minus-two-cos",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -223,6 +237,7 @@ const IMAGE_EXERCISES = [
   {
     // e^x's range (0,∞) negated, then shifted up by 5.
     id: "five-minus-exp",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -232,6 +247,7 @@ const IMAGE_EXERCISES = [
   {
     // sqrt(x)'s range [0,∞) negated, then shifted up by 2.
     id: "neg-sqrt-plus-2",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     signature: "f: [0, \\infty) \\to \\mathbb{R}",
@@ -241,6 +257,7 @@ const IMAGE_EXERCISES = [
   {
     // x^2's range [0,∞) negated, then shifted up by 4.
     id: "four-minus-x-squared",
+    tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -248,73 +265,3 @@ const IMAGE_EXERCISES = [
     correct: [{ type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: true, rightVal: "4" }],
   },
 ];
-
-function instantiateExercise(def) {
-  const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
-  return { id: def.id, difficulty: def.difficulty, estimatedMinutes: def.estimatedMinutes, signature: def.signature, ...rolled };
-}
-
-// Difficulty filter — same 4-button, at-least-one-active pattern as the
-// domain page (see exercise.js), with its own storage key. Levels 3-4 have
-// no exercises yet, so selecting only those falls back to the full bank
-// below rather than crashing on an empty pool.
-const DIFFICULTY_STORAGE_KEY = "calcapp-image-difficulty-v1";
-const difficultyFilterEl = document.getElementById("difficultyFilter");
-const difficultyButtons = Array.from(difficultyFilterEl.querySelectorAll(".difficulty-btn"));
-
-function loadSelectedDifficulties() {
-  try {
-    const raw = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
-    const levels = raw ? JSON.parse(raw) : null;
-    if (Array.isArray(levels) && levels.length > 0 && levels.every((n) => [1, 2, 3, 4].includes(n))) {
-      return new Set(levels);
-    }
-  } catch {}
-  return new Set([1, 2, 3, 4]);
-}
-
-const selectedDifficulties = loadSelectedDifficulties();
-
-function saveSelectedDifficulties() {
-  localStorage.setItem(DIFFICULTY_STORAGE_KEY, JSON.stringify([...selectedDifficulties]));
-}
-
-function renderDifficultyButtons() {
-  for (const btn of difficultyButtons) {
-    const level = Number(btn.dataset.level);
-    btn.classList.toggle("active", selectedDifficulties.has(level));
-  }
-}
-
-renderDifficultyButtons();
-
-difficultyFilterEl.addEventListener("click", (e) => {
-  const btn = e.target.closest(".difficulty-btn");
-  if (!btn) return;
-  const level = Number(btn.dataset.level);
-
-  if (selectedDifficulties.has(level)) {
-    if (selectedDifficulties.size === 1) return; // keep at least one level selected
-    selectedDifficulties.delete(level);
-  } else {
-    selectedDifficulties.add(level);
-  }
-  renderDifficultyButtons();
-  saveSelectedDifficulties();
-  // Deliberately does not touch the exercise on screen — see exercise.js.
-});
-
-let lastExerciseId = null;
-
-function pickExercise() {
-  const filtered = IMAGE_EXERCISES.filter((e) => selectedDifficulties.has(e.difficulty));
-  const base = filtered.length > 0 ? filtered : IMAGE_EXERCISES;
-  const pool = base.length > 1 && lastExerciseId !== null
-    ? base.filter((e) => e.id !== lastExerciseId)
-    : base;
-  const def = pool[Math.floor(Math.random() * pool.length)];
-  lastExerciseId = def.id;
-  return instantiateExercise(def);
-}
-
-createExercisePage(pickExercise);
