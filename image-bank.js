@@ -70,6 +70,7 @@ export const IMAGE_EXERCISES = [
   {
     // ln maps its whole domain (0,∞) onto all of R.
     id: "ln-x",
+    tags: ["ln"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: (0, \\infty) \\to \\mathbb{R}",
@@ -100,6 +101,7 @@ export const IMAGE_EXERCISES = [
   {
     // arcsin's range is the closed interval [-pi/2, pi/2].
     id: "arcsin-x",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: [-1, 1] \\to \\mathbb{R}",
@@ -109,6 +111,7 @@ export const IMAGE_EXERCISES = [
   {
     // arccos's range is the closed interval [0, pi].
     id: "arccos-x",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: [-1, 1] \\to \\mathbb{R}",
@@ -119,6 +122,7 @@ export const IMAGE_EXERCISES = [
     // arctan's range is the open interval (-pi/2, pi/2) — the horizontal
     // asymptotes are approached but never reached.
     id: "arctan-x",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",
@@ -188,6 +192,7 @@ export const IMAGE_EXERCISES = [
   {
     // arctan's range (-pi/2,pi/2) scaled by 2.
     id: "two-arctan",
+    tags: ["inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 0.5,
     signature: "f: \\mathbb{R} \\to \\mathbb{R}",

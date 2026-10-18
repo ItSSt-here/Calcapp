@@ -40,11 +40,18 @@
 /* Levels a teacher's link left out aren't shown at all. */
 .difficulty-btn.hidden { display: none; }
 
-/* The tag a link restricted the bank to (e.g. ?tag=basic), shown so the
-   student knows they're seeing a subset. */
+/* The tags a link restricted the bank to (e.g. ?tags=basic,ln), shown so
+   the student knows they're seeing a subset. */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-chips:not(:empty) { margin-top: 10px; }
+
 .tag-chip {
   display: inline-block;
-  margin-top: 10px;
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -59,8 +66,6 @@
   color: #888;
   border-color: #ccc;
 }
-
-.tag-chip.hidden { display: none; }
 
 /* Four states for the "Your answer" card border: a soft teal tint while
    working (the page's own accent, not blue — this page deliberately moved

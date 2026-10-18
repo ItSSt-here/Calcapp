@@ -56,7 +56,19 @@
   accent-color: var(--accent);
 }
 
-.check-row .tag-chip { margin-top: 0; }
+.tag-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tag-desc { color: var(--muted); }
+
+.hint {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
 
 .summary {
   font-weight: 600;

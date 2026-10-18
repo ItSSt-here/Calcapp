@@ -4,27 +4,32 @@
 import { createExercisePage } from "./exercise-controller.js";
 import { TOPICS, LEVELS, taggedBank, parsePracticeParams } from "./topics.js";
 
-const { topics, levels: fixedLevels, tag: requestedTag } = parsePracticeParams(location.search);
+const { topics, levels: fixedLevels, tags: requestedTags, unknownTags } = parsePracticeParams(location.search);
 
-// An unknown tag (nothing in the chosen topics has it) is ignored, with a
-// note next to the chip, rather than leaving an empty bank — so a typo in
-// a link still gives the student something to practice.
-const tagMatches = requestedTag && topics.some((t) => taggedBank(t, requestedTag).length > 0);
-const activeTag = tagMatches ? requestedTag : null;
-const pools = Object.fromEntries(topics.map((t) => [t, taggedBank(t, activeTag)]));
+// Tags that leave nothing to draw in the chosen topics are ignored, with a
+// note next to the chips, rather than leaving an empty bank — and so is a
+// tag name nobody knows (a typo in a link) — so the student always has
+// something to practice.
+const tagsMatch = requestedTags && topics.some((t) => taggedBank(t, requestedTags).length > 0);
+const activeTags = tagsMatch ? requestedTags : null;
+const pools = Object.fromEntries(topics.map((t) => [t, taggedBank(t, activeTags)]));
 
 document.title = topics.length === 1 ? `Find the ${TOPICS[topics[0]].name}` : "Domain & Image";
 const problemLabelEl = document.getElementById("problemLabel");
 problemLabelEl.textContent = topics.length === 1 ? TOPICS[topics[0]].instruction : "";
 
-const tagChipEl = document.getElementById("tagChip");
-if (requestedTag) {
-  tagChipEl.classList.remove("hidden");
-  tagChipEl.textContent = activeTag
-    ? `#${activeTag}`
-    : `#${requestedTag} — no exercises have this tag, showing all`;
-  tagChipEl.classList.toggle("unknown", !activeTag);
+const tagChipsEl = document.getElementById("tagChips");
+function addChip(text, unknown = false) {
+  const chip = document.createElement("span");
+  chip.className = "tag-chip" + (unknown ? " unknown" : "");
+  chip.textContent = text;
+  tagChipsEl.appendChild(chip);
 }
+for (const tag of activeTags ?? []) addChip(`#${tag}`);
+if (requestedTags && !activeTags) {
+  addChip(`${requestedTags.map((t) => `#${t}`).join(" ")} — no exercises here, showing all`, true);
+}
+for (const tag of unknownTags) addChip(`#${tag} — unknown tag, ignored`, true);
 
 // Difficulty filter — a row of independently toggleable buttons (at least
 // one always stays active). This allows non-contiguous picks like {1, 4},
@@ -95,7 +100,7 @@ difficultyFilterEl.addEventListener("click", (e) => {
 });
 
 function instantiateExercise(topic, def) {
-  const rolled = def.generate ? def.generate({ tag: activeTag }) : { prompt: def.prompt, correct: def.correct };
+  const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
   const { instruction, noun } = TOPICS[topic];
   return {
     id: def.id,

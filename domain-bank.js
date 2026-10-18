@@ -94,6 +94,28 @@ function randCoprimeFraction() {
   return { a, b };
 }
 
+// (x-a)/(x-b) > 0 strictly, wrapped by `wrap` (1/sqrt(...) or ln(...)) —
+// shared by the two strict-of-linear-ratio entries.
+function strictLinearRatio(wrap) {
+  const { lo, hi } = randTwoRoots();
+  const aIsLo = Math.random() < 0.5;
+  const a = aIsLo ? lo : hi;
+  const b = aIsLo ? hi : lo;
+  return {
+    prompt: wrap(`\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}`),
+    correct: [
+      { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
+      { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+    ],
+  };
+}
+
+// The x-a and b-x terms of the two sum-bounded-interval entries.
+function boundedSumTerms() {
+  const { lo, hi } = randTwoRoots();
+  return { lo, hi, leftTerm: linearLatex(1, -lo), rightTerm: hi === 0 ? "-x" : `${hi}-x` };
+}
+
 // Difficulty levels (1-4), recorded on every entry below via the
 // `difficulty` field. Classified by the reasoning actually required to
 // solve the problem, not by how long its generate() code is:
@@ -137,18 +159,22 @@ function randCoprimeFraction() {
 // requiring two separate case-splits to combine. Use it to compare pacing
 // across exercise types, not as a difficulty proxy.
 //
-// Entries may also carry `tags`, which a practice link can filter on
-// (e.g. ?tag=basic) so a teacher only hands out what the class has
-// learned so far. Tags so far:
-//   basic - only functions from lectures 1-2: polynomials, powers/roots,
-//           e^x, sin/cos/tan/cot, |x|, piecewise, and +,-,*,/ and
-//           composition of those (no ln, no inverse trig).
-// An entry with a mix of tagged and untagged prompt variants carries the
-// tag too, and its generate() receives { tag } so it can stick to the
-// matching variants.
+// Every entry also carries `tags`: which function families it uses, so a
+// practice link (e.g. ?tags=basic,ln) can hand out only what the class
+// has learned, or focus on one family. An entry is drawn when ANY of its
+// tags is selected — "basic" never shares an entry with the other two, so
+// #basic alone means nothing beyond lectures 1-2. The families:
+//   basic        - none beyond lectures 1-2: polynomials, powers/roots,
+//                  e^x, sin/cos/tan/cot, |x|, piecewise, and +,-,*,/ and
+//                  composition of those
+//   ln           - uses ln (anything basic around it is fine)
+//   inverse-trig - uses arcsin/arccos/arctan/arccot
+// An exercise using both ln and inverse trig is tagged with both. Prompt
+// variants within one entry must share its tags — split the entry if not.
 export const DOMAIN_EXERCISES = [
   {
     id: "ln-x",
+    tags: ["ln"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     prompt: "f(x) = \\ln(x)",
@@ -160,6 +186,7 @@ export const DOMAIN_EXERCISES = [
     // ln(x²) and ln(|x|) have the identical domain (R\{0}) — one exercise,
     // prompt picked at random each time.
     id: "ln-x2-or-abs-x",
+    tags: ["ln"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     generate: () => ({
@@ -171,6 +198,7 @@ export const DOMAIN_EXERCISES = [
     // x²+a is at least a (>0 for any a in [1,10]), so ln is always defined —
     // the domain is all reals regardless of which a gets rolled.
     id: "ln-x2-plus-a",
+    tags: ["ln"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     generate: () => {
@@ -189,6 +217,7 @@ export const DOMAIN_EXERCISES = [
     // variants of one exercise, each keeping its own boundary formula and
     // parameter range rather than forcing a shared a.
     id: "ln-x2-or-abs-minus-a",
+    tags: ["ln"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -216,6 +245,7 @@ export const DOMAIN_EXERCISES = [
     // ln(ax+b): needs ax+b > 0 — same root/sign logic as sqrt-linear, but
     // strict since ln(0) is undefined too.
     id: "ln-linear",
+    tags: ["ln"],
     difficulty: 2,
     estimatedMinutes: 1,
     generate: () => {
@@ -236,6 +266,7 @@ export const DOMAIN_EXERCISES = [
     // where ax+b=1 — for BOTH to land on clean integers we need a = ±1,
     // since r1 - r0 = 1/a forces a to divide 1. With a = ±1, r1 = r0 + a.
     id: "one-over-ln-linear",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     generate: () => {
@@ -267,6 +298,7 @@ export const DOMAIN_EXERCISES = [
     //     integers when they're consecutive m, m+1 (any wider gap forces
     //     D0>=0), excluding 2 consecutive integers {m, m+1}.
     id: "one-over-ln-quadratic",
+    tags: ["ln"],
     difficulty: 4,
     estimatedMinutes: 5,
     generate: () => {
@@ -303,6 +335,7 @@ export const DOMAIN_EXERCISES = [
     //    5% c>1:           R (x^2+c never dips to 1 or below)
     //    5% c=1:           R, minus {0}
     id: "one-over-ln-x2-plus-c",
+    tags: ["ln"],
     difficulty: 4,
     estimatedMinutes: 4.5,
     generate: () => {
@@ -353,6 +386,7 @@ export const DOMAIN_EXERCISES = [
     //   15% one repeated root:       (x-a)^2 = 0 at a -> excludes just {a}
     //   15% no real root:            always > 0 already -> R
     id: "ln-quadratic-3cases",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -389,6 +423,7 @@ export const DOMAIN_EXERCISES = [
     // strictly between the roots — an open bounded interval (the mirror of
     // sqrt-neg-quadratic's closed one, since 0 itself is now excluded).
     id: "ln-neg-quadratic",
+    tags: ["ln"],
     difficulty: 2,
     estimatedMinutes: 2,
     generate: () => {
@@ -484,6 +519,7 @@ export const DOMAIN_EXERCISES = [
     // arcsin and arccos share the same domain [-1,1] — one exercise, prompt
     // picked at random each time.
     id: "arcsin-or-arccos",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     generate: () => ({
@@ -495,6 +531,7 @@ export const DOMAIN_EXERCISES = [
     // sin(arcsin(x)): sin is defined for every real, so it adds no
     // restriction — the domain is just arcsin's own domain, [-1,1].
     id: "sin-of-arcsin",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.75,
     prompt: "f(x) = \\sin\\left(\\arcsin(x)\\right)",
@@ -507,6 +544,7 @@ export const DOMAIN_EXERCISES = [
     // range fact (not just "sin has no domain restriction") is the real
     // step here, the same kind of insight sqrt-of-arccos relies on.
     id: "arcsin-of-sin",
+    tags: ["inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 2,
     prompt: "f(x) = \\arcsin\\left(\\sin(x)\\right)",
@@ -517,6 +555,7 @@ export const DOMAIN_EXERCISES = [
     // be defined (x>0) AND land inside arcsin/arccos's own domain [-1,1],
     // i.e. -1 <= ln(x) <= 1  <=>  e^-1 <= x <= e.
     id: "arcsin-or-arccos-of-ln",
+    tags: ["ln", "inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     generate: () => ({
@@ -528,6 +567,7 @@ export const DOMAIN_EXERCISES = [
     // ln(ln(x)): needs ln(x) defined (x>0) AND positive, since it's now
     // the outer ln's own argument — ln(x)>0 <=> x>1, the stronger bound.
     id: "ln-of-ln",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 2,
     prompt: "f(x) = \\ln\\left(\\ln(x)\\right)",
@@ -539,6 +579,7 @@ export const DOMAIN_EXERCISES = [
     // ln(arccos(x)): needs arccos(x) defined (x in [-1,1]) AND positive.
     // arccos decreases from pi (x=-1) to 0 (x=1), hitting 0 only at x=1.
     id: "ln-of-arccos",
+    tags: ["ln", "inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     prompt: "f(x) = \\ln\\left(\\arccos(x)\\right)",
@@ -550,6 +591,7 @@ export const DOMAIN_EXERCISES = [
     // ln(arcsin(x)): needs arcsin(x) defined (x in [-1,1]) AND positive.
     // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), hitting 0 only at x=0.
     id: "ln-of-arcsin",
+    tags: ["ln", "inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     prompt: "f(x) = \\ln\\left(\\arcsin(x)\\right)",
@@ -561,6 +603,7 @@ export const DOMAIN_EXERCISES = [
     // ln(arctan(x)): arctan is defined everywhere, so the only condition
     // is positivity — arctan(x)>0 <=> x>0 (arctan is increasing, arctan(0)=0).
     id: "ln-of-arctan",
+    tags: ["ln", "inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 1,
     prompt: "f(x) = \\ln\\left(\\arctan(x)\\right)",
@@ -573,6 +616,7 @@ export const DOMAIN_EXERCISES = [
     // sqrt) — ln(x)>=0 <=> x>=1, the stronger bound. Sibling of ln-of-ln
     // with the two functions swapped.
     id: "sqrt-of-ln",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 2,
     prompt: "f(x) = \\sqrt{\\ln(x)}",
@@ -585,6 +629,7 @@ export const DOMAIN_EXERCISES = [
     // arcsin increases from -pi/2 (x=-1) to pi/2 (x=1), so it's >=0 only
     // on [0,1] — a genuine extra restriction.
     id: "sqrt-of-arcsin",
+    tags: ["inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     prompt: "f(x) = \\sqrt{\\arcsin(x)}",
@@ -598,6 +643,7 @@ export const DOMAIN_EXERCISES = [
     // The sqrt wrapper adds no restriction at all: domain stays [-1,1],
     // a nice contrast with sqrt-of-arcsin right above.
     id: "sqrt-of-arccos",
+    tags: ["inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     prompt: "f(x) = \\sqrt{\\arccos(x)}",
@@ -609,6 +655,7 @@ export const DOMAIN_EXERCISES = [
     // arctan and arccot share the same domain R — one exercise, prompt
     // picked at random each time.
     id: "arctan-or-arccot",
+    tags: ["inverse-trig"],
     difficulty: 1,
     estimatedMinutes: 0.5,
     generate: () => ({
@@ -635,6 +682,7 @@ export const DOMAIN_EXERCISES = [
     // constraint when x>0 (giving x>=1), 1/x>=-1 is the binding constraint
     // when x<0 (giving x<=-1) — gives a clean two-ray domain.
     id: "arcsin-or-arccos-of-reciprocal",
+    tags: ["inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 3,
     generate: () => ({
@@ -652,6 +700,7 @@ export const DOMAIN_EXERCISES = [
     // to [v-1/|a|, v+1/|a|]. |a| in {1,2} keeps the half-width a clean 1
     // or 0.5.
     id: "arcsin-or-arccos-of-linear",
+    tags: ["inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -681,6 +730,7 @@ export const DOMAIN_EXERCISES = [
     // a domain shape it can't represent either (its point rows mean
     // "excluded", not "the only value allowed").
     id: "arcsin-or-arccos-of-abs",
+    tags: ["inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 3,
     generate: () => {
@@ -709,6 +759,7 @@ export const DOMAIN_EXERCISES = [
     // (squaring is safe, both sides non-negative) — always a single closed
     // interval [0, a^2], no case split.
     id: "arcsin-or-arccos-of-sqrt-over-a",
+    tags: ["inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -728,6 +779,7 @@ export const DOMAIN_EXERCISES = [
     // arctan adds nothing, same "don't overthink it" flavor as
     // sqrt(arccos(x)).
     id: "arctan-of-reciprocal",
+    tags: ["inverse-trig"],
     difficulty: 2,
     estimatedMinutes: 1,
     prompt: "f(x) = \\arctan\\left(\\frac{1}{x}\\right)",
@@ -743,6 +795,7 @@ export const DOMAIN_EXERCISES = [
     // point isn't found by solving an equation — it's read off a special
     // angle's sine value, a different kind of combining step entirely.
     id: "one-over-arcsin-minus-angle",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 2.5,
     generate: () => {
@@ -775,6 +828,7 @@ export const DOMAIN_EXERCISES = [
     // the arcsin version above, but without a domain restriction to
     // combine it with.
     id: "one-over-arctan-minus-angle",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 2.5,
     generate: () => {
@@ -848,27 +902,20 @@ export const DOMAIN_EXERCISES = [
     // one exercise, like arcsin-or-arccos. Strict positivity always gives
     // (-inf,lo) u (hi,inf), open at both ends, regardless of which root is
     // labeled the numerator vs denominator (unlike sqrt-of-linear-ratio).
-    // Only the 1/sqrt variant is "basic" (ln isn't) — under that tag,
-    // generate() is told so and skips the ln variant.
-    id: "strict-of-linear-ratio",
+    // Split into two entries (1/sqrt and ln) only because they carry
+    // different tags; strictLinearRatio() builds both.
+    id: "strict-of-linear-ratio-sqrt",
     tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 4,
-    generate: ({ tag } = {}) => {
-      const { lo, hi } = randTwoRoots();
-      const aIsLo = Math.random() < 0.5;
-      const a = aIsLo ? lo : hi;
-      const b = aIsLo ? hi : lo;
-      const ratio = `\\frac{${linearLatex(1, -a)}}{${linearLatex(1, -b)}}`;
-      const sqrtPrompt = `f(x) = \\frac{1}{\\sqrt{${ratio}}}`;
-      return {
-        prompt: tag === "basic" ? sqrtPrompt : pick([sqrtPrompt, `f(x) = \\ln\\left(${ratio}\\right)`]),
-        correct: [
-          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: String(lo) },
-          { type: "interval", leftClosed: false, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
-        ],
-      };
-    },
+    generate: () => strictLinearRatio((ratio) => `f(x) = \\frac{1}{\\sqrt{${ratio}}}`),
+  },
+  {
+    id: "strict-of-linear-ratio-ln",
+    tags: ["ln"],
+    difficulty: 4,
+    estimatedMinutes: 4,
+    generate: () => strictLinearRatio((ratio) => `f(x) = \\ln\\left(${ratio}\\right)`),
   },
   {
     // arcsin((x-a)/(x-b)) or arccos((x-a)/(x-b)), x!=b: needs -1 <=
@@ -881,6 +928,7 @@ export const DOMAIN_EXERCISES = [
     //        (c<b here) -> intersecting the two gives (-inf, c]
     //   b<a: symmetric derivation (c>b here) -> intersecting gives [c, inf)
     id: "arcsin-or-arccos-of-linear-ratio",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 5.5,
     generate: () => {
@@ -910,6 +958,7 @@ export const DOMAIN_EXERCISES = [
     // point, neither representable by this builder, and a=0 would just
     // reproduce arcsin-or-arccos-of-abs's own a=0 case, [-1,1]).
     id: "arcsin-or-arccos-of-sqrt-quadratic",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -1033,6 +1082,7 @@ export const DOMAIN_EXERCISES = [
     // ratio hits exactly 0, fine for a sqrt) becomes excluded here — so
     // unlike the sqrt version, EVERY bracket in every case ends up open.
     id: "ln-quadratic-over-linear-ratio",
+    tags: ["ln"],
     difficulty: 4,
     estimatedMinutes: 5.5,
     generate: () => {
@@ -1088,6 +1138,7 @@ export const DOMAIN_EXERCISES = [
     // gives the final 3-piece domain:
     //   (-inf, d1) u [n1, d2) u [n2, inf)
     id: "sqrt-quadratic-over-quadratic-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 7,
     generate: () => {
@@ -1269,22 +1320,29 @@ export const DOMAIN_EXERCISES = [
     // centered on 0, just open for ln vs closed for sqrt. The inside
     // mirror of the outside-rays pair above, and the same
     // open-for-ln/closed-for-sqrt pairing sum-bounded-interval uses.
-    // Only the sqrt variant is "basic" — see strict-of-linear-ratio.
-    id: "ln-or-sqrt-of-a-minus-abs",
+    // Split into two entries only because they carry different tags.
+    id: "sqrt-of-a-minus-abs",
     tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
-    generate: ({ tag } = {}) => {
+    generate: () => {
       const a = randInt(1, 9);
-      if (tag !== "basic" && Math.random() < 0.5) {
-        return {
-          prompt: `f(x) = \\ln\\left(${a}-|x|\\right)`,
-          correct: [{ type: "interval", leftClosed: false, leftVal: String(-a), rightClosed: false, rightVal: String(a) }],
-        };
-      }
       return {
         prompt: `f(x) = \\sqrt{${a}-|x|}`,
         correct: [{ type: "interval", leftClosed: true, leftVal: String(-a), rightClosed: true, rightVal: String(a) }],
+      };
+    },
+  },
+  {
+    id: "ln-of-a-minus-abs",
+    tags: ["ln"],
+    difficulty: 2,
+    estimatedMinutes: 1.5,
+    generate: () => {
+      const a = randInt(1, 9);
+      return {
+        prompt: `f(x) = \\ln\\left(${a}-|x|\\right)`,
+        correct: [{ type: "interval", leftClosed: false, leftVal: String(-a), rightClosed: false, rightVal: String(a) }],
       };
     },
   },
@@ -1371,6 +1429,7 @@ export const DOMAIN_EXERCISES = [
     //                          case, which lands exactly on its boundary):
     //                          [hi, hi+0.5) u (hi+0.5, inf)
     id: "sqrt-quadratic-over-ln-linear",
+    tags: ["ln"],
     difficulty: 4,
     estimatedMinutes: 6,
     generate: () => {
@@ -1433,6 +1492,7 @@ export const DOMAIN_EXERCISES = [
     //   20% m in {-1,0}:  single interval (m=1 would collapse to a
     //       single point, so it's excluded as degenerate)
     id: "arccos-or-arcsin-of-quadratic",
+    tags: ["inverse-trig"],
     difficulty: 3,
     estimatedMinutes: 4,
     generate: () => {
@@ -1464,21 +1524,26 @@ export const DOMAIN_EXERCISES = [
     // boundary rule for each: ln needs each factor strictly positive
     // (open interval (a,b)), sqrt only needs each factor non-negative
     // (closed interval [a,b], since sqrt(0) is fine).
-    // Only the sqrt variant is "basic" — see strict-of-linear-ratio.
-    id: "sum-bounded-interval",
+    // Split into two entries only because they carry different tags.
+    id: "sum-bounded-interval-sqrt",
     tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 2,
-    generate: ({ tag } = {}) => {
-      const { lo, hi } = randTwoRoots();
-      const rightTerm = hi === 0 ? "-x" : `${hi}-x`;
-      const leftTerm = linearLatex(1, -lo);
-      if (tag === "basic" || Math.random() < 0.5) {
-        return {
-          prompt: `f(x) = \\sqrt{${leftTerm}} + \\sqrt{${rightTerm}}`,
-          correct: [{ type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: true, rightVal: String(hi) }],
-        };
-      }
+    generate: () => {
+      const { lo, hi, leftTerm, rightTerm } = boundedSumTerms();
+      return {
+        prompt: `f(x) = \\sqrt{${leftTerm}} + \\sqrt{${rightTerm}}`,
+        correct: [{ type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: true, rightVal: String(hi) }],
+      };
+    },
+  },
+  {
+    id: "sum-bounded-interval-ln",
+    tags: ["ln"],
+    difficulty: 2,
+    estimatedMinutes: 2,
+    generate: () => {
+      const { lo, hi, leftTerm, rightTerm } = boundedSumTerms();
       return {
         prompt: `f(x) = \\ln\\left(${leftTerm}\\right) + \\ln\\left(${rightTerm}\\right)`,
         correct: [{ type: "interval", leftClosed: false, leftVal: String(lo), rightClosed: false, rightVal: String(hi) }],
@@ -1492,6 +1557,7 @@ export const DOMAIN_EXERCISES = [
     //   a<0 (25%): sqrt(x)>=0>a always holds -> [0, inf) unchanged
     //   a=0 (25%): sqrt(x)>0 <=> x>0 -> (0, inf)
     id: "ln-of-shifted-sqrt",
+    tags: ["ln"],
     difficulty: 4,
     estimatedMinutes: 3.5,
     generate: () => {
@@ -1523,6 +1589,7 @@ export const DOMAIN_EXERCISES = [
     // split: the domain is always the single ray [e^a, inf). a=0 is
     // skipped since it's exactly the plain sqrt-of-ln exercise above.
     id: "sqrt-of-shifted-ln",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 1.5,
     generate: () => {
@@ -1583,6 +1650,7 @@ export const DOMAIN_EXERCISES = [
     // Three disjoint pieces either way — a shape nothing else in the bank
     // produces.
     id: "sqrt-of-abs-ratio",
+    tags: ["basic"],
     difficulty: 4,
     estimatedMinutes: 6,
     generate: () => {
@@ -1665,6 +1733,7 @@ export const DOMAIN_EXERCISES = [
     //   a<0:  only (0,inf) of the assigned interval (a,inf) survives,
     //         leaving a genuine gap (a,0] excluded from the domain
     id: "piecewise-poly-ln",
+    tags: ["ln"],
     difficulty: 3,
     estimatedMinutes: 2.5,
     generate: () => {
@@ -1726,6 +1795,7 @@ export const DOMAIN_EXERCISES = [
     //              (a,inf) starts strictly past 1, leaving genuine gap
     //              (1,a] uncovered: domain = [-1,1] u (a, inf)
     id: "piecewise-arcsin-poly",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 4,
     generate: () => {
@@ -1757,6 +1827,7 @@ export const DOMAIN_EXERCISES = [
     //                  territory) -> domain = R
     //   tan(theta)>a:  reachable -> domain = R \ {tan(theta)}
     id: "piecewise-poly-arctan-angle",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 3,
     generate: () => {
@@ -1801,6 +1872,7 @@ export const DOMAIN_EXERCISES = [
     // point {-1}, a shape this builder can't represent (its point rows
     // mean excluded, not "the only value included").
     id: "piecewise-arccos-sqrt",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 4.5,
     generate: () => {
@@ -1836,6 +1908,7 @@ export const DOMAIN_EXERCISES = [
     // (The two vanishing conditions, a<-1 and a>=k^2>=4, can never hold at
     // once, so at least one piece always survives.)
     id: "piecewise-arccos-arcsin-sqrt",
+    tags: ["inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 5.5,
     generate: () => {
@@ -1871,6 +1944,7 @@ export const DOMAIN_EXERCISES = [
     // whenever a>=1 (arcsin already vanishing), b is forced below a to
     // guarantee the ln piece survives.
     id: "piecewise-ln-arcsin",
+    tags: ["ln", "inverse-trig"],
     difficulty: 4,
     estimatedMinutes: 4.5,
     generate: () => {
