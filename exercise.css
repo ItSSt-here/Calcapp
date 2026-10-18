@@ -80,6 +80,42 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Only the answer card matching the current exercise's kind is shown. */
+.answer-card.hidden { display: none; }
+
+/* The single-number answer (function notation): "g(4) = [field]". */
+.value-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 1.3rem;
+  margin-top: 6px;
+}
+
+math-field.value-answer-input {
+  min-width: 120px;
+  font-size: 1.3rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+math-field.value-answer-input:focus-within {
+  border-color: var(--accent);
+  outline: none;
+}
+
+math-field.value-answer-input::part(menu-toggle) { display: none; }
+
+.value-solution {
+  margin-top: 14px;
+  font-size: 1.2rem;
+  color: var(--warn);
+}
+
+.value-solution.hidden { display: none; }
+
 .answer-card.solution {
   border-color: var(--warn);
   box-shadow: 0 0 0 3px rgba(201, 138, 63, 0.12);

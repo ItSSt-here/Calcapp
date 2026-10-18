@@ -1,14 +1,17 @@
-// Shared page controller for a "describe the correct set of reals"
-// exercise page. Both the domain page and the image page ask the
-// student to build a union of intervals/excluded points and check it
-// against a correct answer of the same shape — this wires up the segment
-// builder, the number-line preview, the check/solution/next buttons, and
-// the "did you mean all reals?" confirm dialog around whatever exercise
-// bank the caller supplies via pickExercise(). Only the bank itself (and
-// the static label text baked into each page's own HTML) differs between
-// pages.
+// Shared page controller for the practice page. Two kinds of answer, picked
+// per exercise by its `kind`:
+//   "interval" (default) - domain/image: the student builds a union of
+//       intervals/excluded points, checked against a correct answer of the
+//       same shape — the segment builder, the number-line preview and the
+//       "did you mean all reals?" confirm dialog.
+//   "value" - function notation: the student types one number into a
+//       single math field, checked against `answer` (any equivalent form).
+// Each kind has its own "Your answer" card; only the current one is shown.
+// The problem card, check/solution/next buttons and feedback line are
+// shared, so a page can mix kinds from one exercise to the next.
 import { createDomainBuilder, buildPreviewFragment, renderNumberLineSVG } from "./domain-builder-core.js";
 import { domainsEqual } from "./domain-equivalence.js";
+import { evaluateExpr } from "./math-expr.js";
 
 export const ALL_REALS = { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: false, rightVal: "\\infty" };
 
@@ -30,9 +33,18 @@ export function createExercisePage(pickExercise) {
   const nextBtn = document.getElementById("nextBtn");
   const confirmYesBtn = document.getElementById("confirmYesBtn");
   const confirmBackBtn = document.getElementById("confirmBackBtn");
-  const answerCardEl = document.getElementById("answerCard");
-  const answerBadgeEl = document.getElementById("answerBadge");
-  const answerStatusTextEl = document.getElementById("answerStatusText");
+  const intervalCardEl = document.getElementById("answerCard");
+  const valueCardEl = document.getElementById("valueAnswerCard");
+  const valueQuestionEl = document.getElementById("valueQuestion");
+  const valueInputEl = document.getElementById("valueInput");
+  const valueSolutionEl = document.getElementById("valueSolution");
+
+  // Declared up here, not with the other state below: the builder calls
+  // setAnswerState() (which reads it) while it's being created.
+  let currentExercise = null;
+  const kindOf = (exercise) => exercise.kind ?? "interval";
+  // The card for the exercise on screen (the interval one before any loads).
+  const activeCard = () => (currentExercise && kindOf(currentExercise) === "value" ? valueCardEl : intervalCardEl);
 
   // Marks the "Your answer" card itself with one of four states: null
   // (neutral, while working), "solution" (viewing the correct answer),
@@ -43,24 +55,27 @@ export function createExercisePage(pickExercise) {
   // onChange below), so a second wrong attempt always starts from neutral
   // and gets its own clear signal, not a rehash of the first.
   function setAnswerState(state) {
-    answerCardEl.classList.remove("correct", "incorrect", "solution");
-    answerBadgeEl.classList.remove("show", "correct", "incorrect");
-    answerBadgeEl.textContent = "";
-    answerStatusTextEl.classList.remove("show", "correct", "incorrect");
-    answerStatusTextEl.textContent = "";
+    const cardEl = activeCard();
+    const badgeEl = cardEl.querySelector(".answer-badge");
+    const statusTextEl = cardEl.querySelector(".answer-status-text");
+    cardEl.classList.remove("correct", "incorrect", "solution");
+    badgeEl.classList.remove("show", "correct", "incorrect");
+    badgeEl.textContent = "";
+    statusTextEl.classList.remove("show", "correct", "incorrect");
+    statusTextEl.textContent = "";
     if (!state) return;
     if (state === "solution") {
-      answerCardEl.classList.add("solution");
+      cardEl.classList.add("solution");
       return;
     }
     // Force a reflow so the shake animation restarts even if "incorrect" is
     // set twice in a row (e.g. clicking Check again with no edits in between).
-    void answerCardEl.offsetWidth;
-    answerCardEl.classList.add(state);
-    answerBadgeEl.classList.add("show", state);
-    answerBadgeEl.textContent = state === "correct" ? "✓" : "✗";
-    answerStatusTextEl.classList.add("show", state);
-    answerStatusTextEl.textContent = state === "correct" ? "Correct" : "Incorrect";
+    void cardEl.offsetWidth;
+    cardEl.classList.add(state);
+    badgeEl.classList.add("show", state);
+    badgeEl.textContent = state === "correct" ? "✓" : "✗";
+    statusTextEl.classList.add("show", state);
+    statusTextEl.textContent = state === "correct" ? "Correct" : "Incorrect";
   }
 
   const builder = createDomainBuilder({
@@ -78,7 +93,16 @@ export function createExercisePage(pickExercise) {
   document.getElementById("addPointBtn").addEventListener("click", () => builder.addPoint());
   document.getElementById("clearBtn").addEventListener("click", () => builder.clear());
 
-  let currentExercise = null;
+  valueInputEl.addEventListener("input", () => setAnswerState(null));
+  // Enter checks, as a single-field answer invites (MathLive would
+  // otherwise just swallow it).
+  valueInputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !checkBtn.disabled) {
+      e.preventDefault();
+      checkBtn.click();
+    }
+  });
+
   let pendingRealsGuess = null; // synthetic segments awaiting confirmation via the ℝ-suggestion dialog
   let outgoingProblemClone = null;
 
@@ -133,9 +157,19 @@ export function createExercisePage(pickExercise) {
     }
     katex.render(exercise.prompt, problemTextEl, { throwOnError: false, displayMode: true });
 
-    builder.setSegments([
-      { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
-    ]);
+    const isValue = kindOf(exercise) === "value";
+    intervalCardEl.classList.toggle("hidden", isValue);
+    valueCardEl.classList.toggle("hidden", !isValue);
+    if (isValue) {
+      katex.render(`${exercise.question} =`, valueQuestionEl, { throwOnError: false });
+      valueInputEl.value = "";
+      valueSolutionEl.classList.add("hidden");
+      valueSolutionEl.textContent = "";
+    } else {
+      builder.setSegments([
+        { type: "interval", leftClosed: true, leftVal: "", rightClosed: false, rightVal: "" },
+      ]);
+    }
 
     feedbackEl.className = "feedback";
     feedbackEl.textContent = "";
@@ -180,7 +214,33 @@ export function createExercisePage(pickExercise) {
     confirmOverlayEl.classList.remove("hidden");
   }
 
+  // Any equivalent form of the number counts (-1/4, -0.25, -\frac{2}{8}).
+  function checkValue() {
+    const value = evaluateExpr(valueInputEl.value);
+    if (value === null) {
+      feedbackEl.className = "feedback info";
+      feedbackEl.textContent = valueInputEl.value.trim() === ""
+        ? "Type your answer first."
+        : "Couldn't read that as a number — enter a single number, like 7, -3 or 1/4.";
+      return;
+    }
+    feedbackEl.className = "feedback";
+    feedbackEl.textContent = "";
+    const expected = currentExercise.answer;
+    if (Math.abs(value - expected) <= 1e-9 * Math.max(1, Math.abs(expected))) {
+      setAnswerState("correct");
+      resolveExercise();
+    } else {
+      setAnswerState("incorrect");
+    }
+  }
+
   checkBtn.addEventListener("click", () => {
+    if (kindOf(currentExercise) === "value") {
+      checkValue();
+      return;
+    }
+
     const segments = builder.getSegments();
 
     if (segments.length > 0 && !builder.isValid()) {
@@ -218,6 +278,13 @@ export function createExercisePage(pickExercise) {
     feedbackEl.textContent = "";
     confirmOverlayEl.classList.add("hidden");
     setAnswerState("solution");
+
+    if (kindOf(currentExercise) === "value") {
+      valueSolutionEl.classList.remove("hidden");
+      katex.render(`${currentExercise.question} = ${currentExercise.answerLatex}`, valueSolutionEl, { throwOnError: false });
+      resolveExercise();
+      return;
+    }
 
     // Replace the student's own preview/number-line — not their input rows —
     // with the correct answer's, right where their own would normally render.

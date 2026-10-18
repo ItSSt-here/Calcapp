@@ -49,6 +49,17 @@
       <svg id="numberLine" class="number-line" viewBox="0 0 600 90"></svg>
     </div>
 
+    <div class="card answer-card hidden" id="valueAnswerCard">
+      <div class="answer-badge"></div>
+      <div class="answer-status-text"></div>
+      <div class="label">Your answer</div>
+      <div class="value-row">
+        <span id="valueQuestion" class="value-question"></span>
+        <math-field id="valueInput" class="value-answer-input" virtual-keyboard-mode="onfocus"></math-field>
+      </div>
+      <div id="valueSolution" class="value-solution hidden"></div>
+    </div>
+
     <div class="buttons">
       <button id="checkBtn">Check</button>
       <button id="solutionBtn" class="secondary">Show solution</button>

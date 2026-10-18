@@ -10,16 +10,30 @@
 //                        The older single ?tag=basic still works.
 import { DOMAIN_EXERCISES } from "./domain-bank.js";
 import { IMAGE_EXERCISES } from "./image-bank.js";
+import { NOTATION_EXERCISES } from "./notation-bank.js";
 
+// `kind` picks the answer card (see exercise-controller.js); `noun` is only
+// used by the interval kind's "did you mean all reals?" dialog.
 export const TOPICS = {
+  notation: {
+    name: "Function Notation",
+    title: "Function Notation",
+    kind: "value",
+    instruction: "Find the requested value.",
+    bank: NOTATION_EXERCISES,
+  },
   domain: {
     name: "Domain",
+    title: "Find the Domain",
+    kind: "interval",
     noun: "domain",
     instruction: "Determine the domain of the given function.",
     bank: DOMAIN_EXERCISES,
   },
   image: {
     name: "Image",
+    title: "Find the Image",
+    kind: "interval",
     noun: "image",
     instruction: "Determine the image of the given function.",
     bank: IMAGE_EXERCISES,

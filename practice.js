@@ -14,7 +14,7 @@ const tagsMatch = requestedTags && topics.some((t) => taggedBank(t, requestedTag
 const activeTags = tagsMatch ? requestedTags : null;
 const pools = Object.fromEntries(topics.map((t) => [t, taggedBank(t, activeTags)]));
 
-document.title = topics.length === 1 ? `Find the ${TOPICS[topics[0]].name}` : "Domain & Image";
+document.title = topics.length === 1 ? TOPICS[topics[0]].title : "Practice";
 const problemLabelEl = document.getElementById("problemLabel");
 problemLabelEl.textContent = topics.length === 1 ? TOPICS[topics[0]].instruction : "";
 
@@ -101,7 +101,7 @@ difficultyFilterEl.addEventListener("click", (e) => {
 
 function instantiateExercise(topic, def) {
   const rolled = def.generate ? def.generate() : { prompt: def.prompt, correct: def.correct };
-  const { instruction, noun } = TOPICS[topic];
+  const { instruction, noun, kind } = TOPICS[topic];
   return {
     id: def.id,
     difficulty: def.difficulty,
@@ -109,6 +109,7 @@ function instantiateExercise(topic, def) {
     signature: def.signature,
     instruction,
     noun,
+    kind,
     ...rolled,
   };
 }
