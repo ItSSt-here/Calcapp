@@ -923,6 +923,65 @@ export const DOMAIN_EXERCISES = [
     },
   },
   {
+    // sqrt(x-a)/sqrt(...) — the "quotient of roots" partner of
+    // sqrt-of-linear-ratio: each root needs its own radicand >= 0 (the
+    // denominator's strictly > 0), so the conditions are intersected rather
+    // than sign-charted, and sqrt(A/B) and sqrt(A)/sqrt(B) turn out to have
+    // different domains. Two shapes:
+    //   50% sqrt(x-a)/sqrt(x-b): two rays in the same direction, the later
+    //       start wins — [a,inf) if a>b, (b,inf) if b>a (open: denominator)
+    //   50% sqrt(x-a)/sqrt(b-x), a<b: opposite rays -> the bounded [a,b)
+    //       (a>b would make the domain empty, which the builder can't take)
+    id: "sqrt-over-sqrt-linear",
+    tags: ["basic"],
+    difficulty: 2,
+    estimatedMinutes: 1.5,
+    generate: () => {
+      const { lo, hi } = randTwoRoots();
+      if (Math.random() < 0.5) {
+        const aIsHi = Math.random() < 0.5;
+        const a = aIsHi ? hi : lo;
+        const b = aIsHi ? lo : hi;
+        return {
+          prompt: `f(x) = \\frac{\\sqrt{${linearLatex(1, -a)}}}{\\sqrt{${linearLatex(1, -b)}}}`,
+          correct: [aIsHi
+            ? { type: "interval", leftClosed: true, leftVal: String(a), rightClosed: false, rightVal: "\\infty" }
+            : { type: "interval", leftClosed: false, leftVal: String(b), rightClosed: false, rightVal: "\\infty" }],
+        };
+      }
+      const right = hi === 0 ? "-x" : `${hi}-x`;
+      return {
+        prompt: `f(x) = \\frac{\\sqrt{${linearLatex(1, -lo)}}}{\\sqrt{${right}}}`,
+        correct: [{ type: "interval", leftClosed: true, leftVal: String(lo), rightClosed: false, rightVal: String(hi) }],
+      };
+    },
+  },
+  {
+    // sqrt((x-a)(x-b)/|x-a|), numerator shown expanded: |x-a| > 0 except at
+    // x=a, so the denominator never changes the sign — only "numerator >= 0
+    // and x != a" matter. The trap is the shared factor (x-a): students who
+    // cancel it forget to exclude a, or keep a because it's a root of the
+    // numerator. a is one of the two roots, so it is always punched out of
+    // the closed outside region (-inf,lo] u [hi,inf):
+    //   a=lo: (-inf,lo) u [hi,inf)      a=hi: (-inf,lo] u (hi,inf)
+    id: "sqrt-quadratic-over-abs-factor",
+    tags: ["basic"],
+    difficulty: 3,
+    estimatedMinutes: 3,
+    generate: () => {
+      const { lo, hi, b, c } = randTwoRoots();
+      const aIsLo = Math.random() < 0.5;
+      const a = aIsLo ? lo : hi;
+      return {
+        prompt: `f(x) = \\sqrt{\\frac{${quadraticLatex(b, c)}}{|${linearLatex(1, -a)}|}}`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: "-\\infty", rightClosed: !aIsLo, rightVal: String(lo) },
+          { type: "interval", leftClosed: aIsLo, leftVal: String(hi), rightClosed: false, rightVal: "\\infty" },
+        ],
+      };
+    },
+  },
+  {
     // 1/sqrt((x-a)/(x-b)) or ln((x-a)/(x-b)): both need the SAME thing —
     // (x-a)/(x-b) > 0 strictly — so they're merged as prompt variants of
     // one exercise, like arcsin-or-arccos. Strict positivity always gives
@@ -1347,15 +1406,18 @@ export const DOMAIN_EXERCISES = [
     // mirror of the outside-rays pair above, and the same
     // open-for-ln/closed-for-sqrt pairing sum-bounded-interval uses.
     // Split into two entries only because they carry different tags.
+    // In 25% of the sqrt draws the centre is shifted, sqrt(a-|x-c|): the
+    // extra step |x-c| <= a  =>  c-a <= x <= c+a.
     id: "sqrt-of-a-minus-abs",
     tags: ["basic"],
     difficulty: 2,
     estimatedMinutes: 1.5,
     generate: () => {
       const a = randInt(1, 9);
+      const c = Math.random() < 0.25 ? randIntExcluding(-6, 6, 0) : 0;
       return {
-        prompt: `f(x) = \\sqrt{${a}-|x|}`,
-        correct: [{ type: "interval", leftClosed: true, leftVal: String(-a), rightClosed: true, rightVal: String(a) }],
+        prompt: `f(x) = \\sqrt{${a}-|${linearLatex(1, -c)}|}`,
+        correct: [{ type: "interval", leftClosed: true, leftVal: String(c - a), rightClosed: true, rightVal: String(c + a) }],
       };
     },
   },
