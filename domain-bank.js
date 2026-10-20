@@ -286,6 +286,32 @@ export const DOMAIN_EXERCISES = [
     },
   },
   {
+    // 1/((x-p)·ln(x-q)): needs x>q (ln defined), x != q+1 (ln != 0) AND
+    // x != p (the linear factor != 0). Three shapes, by where p falls:
+    //   50% p >= q+2:  two separate punched points, (q,q+1)u(q+1,p)u(p,inf)
+    //   25% p = q+1:   both conditions punch the SAME point
+    //   25% p <= q:    x=p is already outside (q,inf), so the linear factor
+    //                  adds nothing — only q+1 is punched
+    id: "one-over-linear-times-ln",
+    tags: ["ln"],
+    difficulty: 3,
+    estimatedMinutes: 3,
+    generate: () => {
+      const q = randInt(-6, 5);
+      const roll = Math.random();
+      const p = roll < 0.5 ? q + randInt(2, 6) : roll < 0.75 ? q + 1 : q - randInt(0, 4);
+      const factor = p === 0 ? "x" : `\\left(${linearLatex(1, -p)}\\right)`;
+      const points = p > q + 1 ? [q + 1, p] : [q + 1];
+      return {
+        prompt: `f(x) = \\frac{1}{${factor}\\ln\\left(${linearLatex(1, -q)}\\right)}`,
+        correct: [
+          { type: "interval", leftClosed: false, leftVal: String(q), rightClosed: false, rightVal: "\\infty" },
+          ...points.map((v) => ({ type: "point", pointVal: String(v) })),
+        ],
+      };
+    },
+  },
+  {
     // 1/ln(x^2+Bx+C): needs the quadratic > 0 (ln defined) AND != 1 (ln !=
     // 0). The two boundary discriminants always differ by exactly 4
     // (D1 = D0 + 4, from completing q(x)=1 as q(x)-1=0), which rules out
