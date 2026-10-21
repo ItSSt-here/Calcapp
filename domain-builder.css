@@ -232,9 +232,9 @@ math-field.value-input::part(menu-toggle) {
   line-height: 1;
   font-size: 9px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: white;
-  color: var(--muted);
+  border: 1px solid var(--accent-tint-border);
+  background: var(--accent-tint);
+  color: var(--accent);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -242,7 +242,22 @@ math-field.value-input::part(menu-toggle) {
   z-index: 2;
 }
 
-.field-menu-btn:hover { background: var(--accent-tint); border-color: var(--accent); color: var(--accent); }
+.field-menu-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* The note under "Your answer" pointing at the ▾ button — it shows a
+   static copy of the button so students know what to look for. */
+.answer-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: -4px 0 10px;
+}
+
+.answer-hint .field-menu-btn {
+  position: static;
+  display: inline-flex;
+  vertical-align: middle;
+  cursor: default;
+}
 
 .field-menu {
   position: absolute;
