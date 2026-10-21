@@ -19,6 +19,7 @@ export function createExercisePage(pickExercise) {
   const problemCardSlotEl = document.getElementById("problemCardSlot");
   const problemCardEl = document.getElementById("problemCard");
   const problemSignatureEl = document.getElementById("problemSignature"); // optional — not every exercise type sets one
+  const problemLevelEl = document.getElementById("problemLevel"); // optional
   const problemTextEl = document.getElementById("problemText");
   const problemLabelEl = document.getElementById("problemLabel");
   const confirmLabelEl = document.getElementById("confirmLabel");
@@ -140,6 +141,7 @@ export function createExercisePage(pickExercise) {
     }
 
     problemCardEl.dataset.level = exercise.difficulty;
+    if (problemLevelEl) problemLevelEl.textContent = `Level ${exercise.difficulty}`;
     // A page mixing topics (domain + image) asks a different question per
     // exercise, so the exercise carries its own wording when it has one.
     if (exercise.instruction) problemLabelEl.textContent = exercise.instruction;
@@ -297,9 +299,9 @@ export function createExercisePage(pickExercise) {
     resolveExercise();
   });
 
-  nextBtn.addEventListener("click", () => {
-    loadExercise(pickExercise(), { animate: true });
-  });
+  const next = () => loadExercise(pickExercise(), { animate: true });
+  nextBtn.addEventListener("click", next);
 
   loadExercise(pickExercise());
+  return { next };
 }

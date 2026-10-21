@@ -42,6 +42,45 @@
 
 /* The tags a link restricted the bank to (e.g. ?tags=basic,ln), shown so
    the student knows they're seeing a subset. */
+/* After a level click: the exercise on screen stays, so say so and offer
+   a new one from the updated selection. */
+.level-change-note {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #5c564d;
+}
+
+.level-change-note.hidden,
+.answer-hint.hidden { display: none; }
+
+.link-btn {
+  padding: 0;
+  margin-left: 4px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.link-btn:hover { text-decoration: underline; }
+
+/* "Level N" in the problem card's corner, in that level's color. */
+.problem-level {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  background: var(--diff-accent, var(--accent));
+}
+
+.problem-level:empty { display: none; }
+
 .tag-chips {
   display: flex;
   flex-wrap: wrap;

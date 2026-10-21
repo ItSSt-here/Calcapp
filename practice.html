@@ -14,18 +14,24 @@
     <a href="index.html" class="home-link">← Topics</a>
 
     <div class="card">
-      <div class="label">Difficulty</div>
+      <div class="label">Difficulty levels</div>
+      <div id="difficultyHint" class="answer-hint">Tap to turn levels on/off — you can choose several. 1&nbsp;=&nbsp;easiest, 4&nbsp;=&nbsp;hardest.</div>
       <div id="difficultyFilter" class="difficulty-filter">
         <button type="button" class="difficulty-btn" data-level="1">1</button>
         <button type="button" class="difficulty-btn" data-level="2">2</button>
         <button type="button" class="difficulty-btn" data-level="3">3</button>
         <button type="button" class="difficulty-btn" data-level="4">4</button>
       </div>
+      <div id="levelChangeNote" class="level-change-note hidden">
+        Applies from the next exercise.
+        <button type="button" id="newExerciseNowBtn" class="link-btn">New exercise now →</button>
+      </div>
       <div id="tagChips" class="tag-chips"></div>
     </div>
 
     <div id="problemCardSlot">
       <div class="card problem-card" id="problemCard">
+        <div id="problemLevel" class="problem-level"></div>
         <div id="problemContent">
           <div id="problemLabel" class="label"></div>
           <div id="problemSignature" class="problem-signature hidden"></div>

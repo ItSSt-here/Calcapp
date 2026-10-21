@@ -81,6 +81,15 @@ function renderDifficultyButtons() {
 
 renderDifficultyButtons();
 
+// With a single allowed level there's nothing to toggle, so no hint.
+if (allowedLevels.length === 1) document.getElementById("difficultyHint").classList.add("hidden");
+
+// Shown after a level click, since the click itself leaves the exercise on
+// screen alone — offers to draw from the new selection right away.
+const levelChangeNoteEl = document.getElementById("levelChangeNote");
+let page = null;
+document.getElementById("newExerciseNowBtn").addEventListener("click", () => page.next());
+
 difficultyFilterEl.addEventListener("click", (e) => {
   const btn = e.target.closest(".difficulty-btn");
   if (!btn) return;
@@ -94,6 +103,7 @@ difficultyFilterEl.addEventListener("click", (e) => {
   }
   renderDifficultyButtons();
   saveSelectedDifficulties();
+  levelChangeNoteEl.classList.remove("hidden");
   // Deliberately does not touch the exercise on screen — the filter only
   // affects what pickExercise() draws from next ("Another exercise"),
   // so an accidental click here can't yank away a problem mid-solve.
@@ -120,6 +130,7 @@ let lastExerciseKey = null;
 // With several topics, first pick a topic evenly, then an exercise in it —
 // otherwise the much bigger domain bank would crowd out the image one.
 function pickExercise() {
+  levelChangeNoteEl.classList.add("hidden"); // the new exercise already follows the selection
   const byLevel = Object.fromEntries(
     topics.map((t) => [t, pools[t].filter((e) => selectedDifficulties.has(e.difficulty))]),
   );
@@ -145,4 +156,4 @@ function pickExercise() {
   return instantiateExercise(topic, def);
 }
 
-createExercisePage(pickExercise);
+page = createExercisePage(pickExercise);
