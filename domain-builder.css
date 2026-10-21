@@ -80,7 +80,7 @@ h1 {
 
 .label {
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--text);
   margin-bottom: 10px;
   font-weight: 600;
 }
@@ -248,7 +248,7 @@ math-field.value-input::part(menu-toggle) {
    static copy of the button so students know what to look for. */
 .answer-hint {
   font-size: 0.8rem;
-  color: var(--muted);
+  color: #5c564d; /* a step below the labels, but darker than --muted */
   margin: -4px 0 10px;
 }
 
