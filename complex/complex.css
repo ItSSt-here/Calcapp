@@ -1,0 +1,72 @@
+/* Complex-numbers practice — only what the shared Calcapp styles
+   (../domain-builder.css, ../exercise.css) don't already cover. */
+
+.nowrap { white-space: nowrap; }
+
+.answer-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* Four operation names don't fit on one row on a phone. */
+.difficulty-filter { flex-wrap: wrap; }
+.difficulty-btn { min-width: 120px; padding: 10px 8px; }
+
+/* "[ re ] + [ im ] i" — always left-to-right, like the math it holds. */
+.complex-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: ltr;
+  font-size: 1.4rem;
+  margin: 6px 0 22px;
+}
+
+.part-input {
+  width: 90px;
+  font-size: 1.3rem;
+  padding: 6px 10px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  color: var(--text);
+}
+
+.part-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.part-i {
+  font-family: "KaTeX_Math", "Cambria Math", Georgia, serif;
+  font-style: italic;
+  font-size: 1.6rem;
+}
+
+.complex-solution {
+  font-size: 1.1rem;
+  direction: ltr;
+}
+
+/* A long step (division) scrolls on its own rather than being cut off. */
+.complex-solution .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0 6px;
+}
+
+@media (max-width: 480px) {
+  .complex-solution { font-size: 0.8rem; }
+  .complex-solution .step-note { font-size: 0.85rem; }
+  .problem-card { padding-top: 40px; }
+}
+
+.complex-solution.hidden { display: none; }
+
+.complex-solution .step-note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 4px 0;
+}

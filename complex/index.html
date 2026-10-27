@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complex Numbers</title>
+<link rel="stylesheet" href="../domain-builder.css">
+<link rel="stylesheet" href="../exercise.css">
+<link rel="stylesheet" href="complex.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Complex Numbers</h1>
+    <p class="subtitle">Practice the four operations. Write every answer as <span class="nowrap">a + bi</span>.</p>
+
+    <div class="card">
+      <div class="label">Operations</div>
+      <div id="difficultyHint" class="answer-hint">Tap to turn operations on/off — you can choose several.</div>
+      <div id="difficultyFilter" class="difficulty-filter">
+        <button type="button" class="difficulty-btn" data-level="1">+ Add</button>
+        <button type="button" class="difficulty-btn" data-level="2">− Subtract</button>
+        <button type="button" class="difficulty-btn" data-level="3">× Multiply</button>
+        <button type="button" class="difficulty-btn" data-level="4">÷ Divide</button>
+      </div>
+      <div id="levelChangeNote" class="level-change-note" hidden>
+        Applies from the next exercise.
+        <button type="button" id="newExerciseNowBtn" class="link-btn">New exercise now →</button>
+      </div>
+    </div>
+
+    <div id="problemCardSlot">
+      <div class="card problem-card" id="problemCard">
+        <div id="problemLevel" class="problem-level"></div>
+        <div id="problemLabel" class="label"></div>
+        <div id="problemText" class="problem-text"></div>
+      </div>
+    </div>
+
+    <div class="card answer-card" id="answerCard">
+      <div class="answer-badge"></div>
+      <div class="answer-status-text"></div>
+      <div class="label">Your answer</div>
+      <div class="answer-hint">Fill in the real part and the imaginary part (whole numbers; write 0 if a part is zero).</div>
+      <div class="complex-row">
+        <input id="reInput" class="part-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Real part">
+        <span class="part-sep">+</span>
+        <input id="imInput" class="part-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Imaginary part">
+        <span class="part-i">i</span>
+      </div>
+      <div id="solutionLabel" class="label showing-solution hidden">Solution</div>
+      <div id="solution" class="complex-solution hidden"></div>
+    </div>
+
+    <div class="buttons">
+      <button id="checkBtn">Check</button>
+      <button id="solutionBtn" class="secondary">Show solution</button>
+      <button id="nextBtn" class="secondary hidden">Another exercise</button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <script type="module" src="complex.js"></script>
+</body>
+</html>
